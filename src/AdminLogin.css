@@ -1,0 +1,83 @@
+.admin-login-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.admin-login-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.admin-login-card h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d2d2d;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.admin-login-card p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #777;
+  text-align: center;
+  margin: 0 0 30px 0;
+}
+
+.admin-login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-login-card input {
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.admin-login-card input:focus {
+  outline: none;
+  border-color: #d4544a;
+}
+
+.admin-login-btn {
+  padding: 12px;
+  background: #d4544a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.admin-login-btn:hover {
+  background: #b83a32;
+}
+
+.admin-login-error {
+  color: #d4544a;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.admin-login-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: #999;
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}

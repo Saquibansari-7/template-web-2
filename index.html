@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E & J — We're Tying the Knot</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=DM+Serif+Display:ital@0;1&family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script data-arena-recording="true">(function () {
+      "use strict";
+      var SK = "__arena_rec", RRWEB_CDN = "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.4/dist/rrweb.min.js";
+      var MAX_RECORDING_MS = 600000, MAX_RRWEB_EVENTS = 30000, MAX_INTERACTIONS = 5000, MAX_CURSOR_POINTS = 10000, recStopped = false;
+      var stored = null; try { var raw = sessionStorage.getItem(SK); if (raw) stored = JSON.parse(raw); } catch (ex) { }
+      var meta = stored ? stored.m || null : null, rrwebEvents = stored ? stored.r || [] : [], rrwebStarted = false, startTime = stored ? stored.st || Date.now() : Date.now();
+      var interactions = stored ? stored.i || [] : [], cursorPath = stored ? stored.c || [] : [], lastCursorSample = 0, lastScrollSample = 0;
+      var pageHeight = document.documentElement.scrollHeight;
+      var viewport = { width: window.innerWidth, height: window.innerHeight };
+      function isCapped() { if (recStopped) return true; if (Date.now() - startTime >= MAX_RECORDING_MS) { recStopped = true; return true; } return false; }
+      function persist() { try { var d = JSON.stringify({ r: rrwebEvents, i: interactions, c: cursorPath, m: meta, st: startTime }); sessionStorage.setItem(SK, d); } catch (ex) { rrwebEvents = rrwebEvents.slice(Math.floor(rrwebEvents.length / 2)); try { sessionStorage.setItem(SK, JSON.stringify({ r: rrwebEvents, i: interactions, c: cursorPath, m: meta, st: startTime })); } catch (ex2) { } } }
+      setInterval(persist, 5000);
+      window.addEventListener("resize", function () { viewport = { width: window.innerWidth, height: window.innerHeight }; pageHeight = document.documentElement.scrollHeight; });
+      document.addEventListener("click", function (e) { if (isCapped() || interactions.length >= MAX_INTERACTIONS) return; var el = e.target; var tag = el.tagName ? el.tagName.toLowerCase() : ""; var text = (el.textContent || "").trim().substring(0, 80); var classes = el.className && typeof el.className === "string" ? el.className.substring(0, 120) : ""; interactions.push({ type: "click", t: Date.now() - startTime, x: Math.round(e.clientX), y: Math.round(e.clientY), element: { tag: tag, text: text, classes: classes } }); }, true);
+      window.addEventListener("scroll", function () { if (isCapped() || interactions.length >= MAX_INTERACTIONS) return; var now = Date.now(); if (now - lastScrollSample < 200) return; lastScrollSample = now; var scrollY = Math.round(window.scrollY || window.pageYOffset || 0); var depthPct = pageHeight > viewport.height ? Math.min(100, Math.round(((scrollY + viewport.height) / pageHeight) * 100)) : 100; interactions.push({ type: "scroll", t: now - startTime, y: scrollY, depth_pct: depthPct }); }, { passive: true });
+      document.addEventListener("mousemove", function (e) { if (isCapped() || cursorPath.length >= MAX_CURSOR_POINTS) return; var now = Date.now(); if (now - lastCursorSample < 250) return; lastCursorSample = now; cursorPath.push([Math.round(e.clientX), Math.round(e.clientY), now - startTime]); }, { passive: true });
+      document.addEventListener("keydown", function (e) { if (isCapped() || interactions.length >= MAX_INTERACTIONS) return; if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return; interactions.push({ type: "keydown", t: Date.now() - startTime, key: e.key }); }, true);
+      function buildAnalytics() { if (!meta) return null; var ph = document.documentElement.scrollHeight; var maxScroll = 0, clickElements = {}, firstClick = null, firstScroll = null, totalDistance = 0; for (var i = 0; i < interactions.length; i++) { var ev = interactions[i]; if (ev.type === "scroll") { if (ev.depth_pct > maxScroll) maxScroll = ev.depth_pct; if (!firstScroll) firstScroll = ev.t; } if (ev.type === "click") { if (!firstClick) firstClick = ev.t; var key = ev.element.tag + ":" + ev.element.text.substring(0, 30); clickElements[key] = true; } } for (var j = 1; j < cursorPath.length; j++) { var dx = cursorPath[j][0] - cursorPath[j - 1][0]; var dy = cursorPath[j][1] - cursorPath[j - 1][1]; totalDistance += Math.sqrt(dx * dx + dy * dy); } var duration = Date.now() - startTime; var clickHeatmap = []; for (var k = 0; k < interactions.length; k++) { if (interactions[k].type === "click") clickHeatmap.push([interactions[k].x, interactions[k].y]); } return { generation_id: meta.generationId, tournament_id: meta.tournamentId, started_at: new Date(startTime).toISOString(), ended_at: new Date().toISOString(), duration_ms: duration, viewport: viewport, page_height: ph, interactions: interactions, cursor_path: cursorPath, click_heatmap: clickHeatmap, summary: { total_clicks: clickHeatmap.length, total_scrolls: interactions.filter(function (e) { return e.type === "scroll"; }).length, max_scroll_depth_pct: maxScroll, unique_elements_clicked: Object.keys(clickElements).length, time_to_first_click_ms: firstClick, time_to_first_scroll_ms: firstScroll, cursor_distance_px: Math.round(totalDistance), active_time_ms: duration } }; }
+      function loadRrweb() { if (rrwebStarted) return; rrwebStarted = true; var s = document.createElement("script"); s.src = RRWEB_CDN; s.onload = function () { var rec = (window.rrweb && window.rrweb.record) || window.rrwebRecord; if (!rec) return; rec({ emit: function (event) { if (rrwebEvents.length >= MAX_RRWEB_EVENTS || isCapped()) return; rrwebEvents.push(event); } }); }; s.onerror = function () { }; document.head.appendChild(s); }
+      window.addEventListener("message", function (e) { if (!e.data || typeof e.data.type !== "string") return; if (e.data.type === "arena:init") { if (!meta) startTime = Date.now(); meta = { generationId: e.data.generationId || e.data.modelId, tournamentId: e.data.tournamentId }; persist(); loadRrweb(); if (e.source) e.source.postMessage({ type: "arena:init-ack", generationId: meta.generationId }, "*"); } if (e.data.type === "arena:flush") { var resp = { type: "arena:recording-data", generationId: meta ? meta.generationId : null, rrwebEvents: rrwebEvents, analytics: buildAnalytics() }; try { sessionStorage.removeItem(SK); } catch (ex) { } if (e.source) e.source.postMessage(resp, "*"); } });
+      loadRrweb();
+    })();</script>
+  <script
+    data-arena-views="true">(function () { var isTop = false; try { isTop = window.self === window.top; } catch (e) { } if (!isTop) return; window.__ARENA_META = { generationId: "claude-opus-4-7", tournamentId: "57dd7ab3-203c-448d-a379-d723d3ed97be" }; var payload = { tournamentId: "57dd7ab3-203c-448d-a379-d723d3ed97be", modelId: "claude-opus-4-7" }; try { var r = document.referrer; if (r) { var u = new URL(r); payload.referrerDomain = u.hostname; } } catch (e) { } try { var vid = null; try { vid = localStorage.getItem('arena_vid'); } catch (e) { } if (!vid) { vid = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)).slice(0, 32); try { localStorage.setItem('arena_vid', vid); } catch (e) { } } if (vid) payload.viewerId = vid; } catch (e) { } try { fetch("https://www.designarena.ai/api/agon/page-views", { "method": "POST", "headers": { "Content-Type": "application/json" }, "body": JSON.stringify(payload), "keepalive": true }); } catch (e) { } })();</script>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <h1 class="hero-title" data-anim="title" style="--d:.15s;--dur:1.3s">
+     <span class="swash">W</span>E'RE TYING THE <span class="swash">K</span>NOT!
+    </h1>
+
+    <div class="hero-image" data-anim="zoom" data-parallax="0.12" style="--d:.5s;--dur:1.4s">
+      <img src="public/images/couple-hero.jpg" alt="Emma &amp; Jordan" />
+    </div>
+
+    <div class="hero-meta left" data-anim="slide-l" style="--d:1.0s;--dur:1.1s">
+      <span class="label">the date</span>
+      Friday, October 26,<br>2035 · 5:00 PM
+    </div>
+    <div class="hero-meta right" data-anim="slide-r" style="--d:1.15s;--dur:1.1s">
+      <span class="label">the place</span>
+      Safdie Foundry,<br>San Francisco, CA
+    </div>
+  </section>
+
+  <!-- ===== INTRO SPLIT ===== -->
+  <section class="split">
+    <div class="split-left">
+      <div class="split-card" data-anim="rise-lg" data-io style="--d:.05s;--dur:1.2s">
+        <div class="eyebrow">a little note</div>
+        <h2>From the first hello to forever.</h2>
+        <p>We met on a rainy Tuesday in a tiny bookshop in the Mission. He was looking for a Murakami. She was
+          pretending to be. Three years later — here we are.</p>
+        <p>We can't wait to celebrate with the people we love most. You.</p>
+        <div class="signature">— Emma &amp; Jordan</div>
+      </div>
+    </div>
+    <div class="split-right" data-io-self>
+      <div class="split-img-wrap">
+        <img src="public/images/couple-2.jpg" alt="Couple" />
+  </section>
+
+  <!-- ===== CEREMONY CARD ===== -->
+  <div class="ceremony-wrap">
+    <button class="rsvp-overlay" id="rsvp" onclick="openRSVP()" data-anim="pop" data-io
+        style="--d:.45s;--dur:.9s">RSVP NOW →</button>
+    </div>
+    <div class="ceremony-card" data-anim="tilt-settle" data-io style="--dur:1.2s">
+      <div class="eyebrow">the ceremony</div>
+      <h3>Ceremony &amp; Reception</h3>
+      <div class="ceremony-row">
+        <div>
+          <div class="label">When</div>
+          <div class="val">October 26, 2035<br>5:00 PM sharp</div>
+        </div>
+        <div>
+          <div class="label">Where</div>
+          <div class="val">Safdie Foundry<br>San Francisco</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STORY ===== -->
+  <section class="story" id="story">
+    <div class="story-img" data-anim="tilt-in-r" data-io data-parallax="-0.06" style="--dur:1.3s">
+      <img src="public/images/story.jpg" alt="Our story" />
+    </div>
+    <div class="story-text">
+      <div class="eyebrow" data-anim="rise" data-io style="--d:.1s;--dur:1s">our story</div>
+      <h2 data-anim="rise" data-io style="--d:.2s;--dur:1.1s">How it <span class="script">started...</span></h2>
+      <p data-anim="rise" data-io style="--d:.32s;--dur:1s">She ordered an oat-milk latte. He spilled his. What followed
+        was a two-hour conversation about terrible movies, better books, and why neither of us could stand the smell of
+        eucalyptus candles.</p>
+      <p data-anim="rise" data-io style="--d:.44s;--dur:1s">One apartment, two coastal moves, and a stubborn rescue dog
+        named Pablo later — we still argue about the candles.</p>
+      <div class="sig" data-anim="rise" data-io style="--d:.56s;--dur:1s">Emma &amp; Jordan, est. 2032</div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ (angled) ===== -->
+  <section class="angled" id="faq">
+    <div class="angled-img" data-anim="diag-img" data-io data-parallax="-0.08" style="--dur:1.4s">
+      <img src="public/images/couple-3.jpg" alt="Couple laughing" />
+    </div>
+    <div class="angled-red" data-anim="diag-red" data-io style="--d:.15s;--dur:1.4s">
+      <h2>You've Got <span class="script">Questions...</span></h2>
+      <p>Dress code? Dogs allowed? Where to stay? Is there a late-night taco bar? (Yes.) We've answered all the big ones
+        — and the weird ones — so you can show up ready to celebrate.</p>
+      <button class="btn" onclick="window.openFAQModal && window.openFAQModal()">READ THE FAQ →</button>
+    </div>
+  </section>
+
+  <!-- ===== TRAVEL ===== -->
+  <section class="travel" id="travel">
+    <div class="travel-head">
+      <div class="eyebrow" data-anim="rise" data-io style="--d:.05s">travel &amp; stay</div>
+      <h2 data-anim="rise" data-io style="--d:.15s;--dur:1.2s">Come for the vows, stay for the city.</h2>
+      <p data-anim="rise" data-io style="--d:.3s">A loose guide to where we'd crash, eat, and wander if we had the
+        weekend to do it over.</p>
+    </div>
+    <div class="travel-grid">
+      <div class="travel-card" data-anim="travel-1" data-io style="--d:.1s;--dur:1.1s">
+        <img src="public/images/travel-1.jpg" alt="San Francisco" />
+        <div class="tag">getting there</div>
+        <h3>Fly into SFO or OAK</h3>
+        <p>SFO is a 20-min ride to the venue. OAK is 25. Both have reliable rideshare — Caltrain works too if you're
+          feeling scenic.</p>
+      </div>
+      <div class="travel-card" data-anim="travel-2" data-io style="--d:.22s;--dur:1.1s">
+        <img src="public/images/travel-2.jpg" alt="Hotel room" />
+        <div class="tag">where to stay</div>
+        <h3>The Proper &amp; The Battery</h3>
+        <p>Use code <strong>EMMA&amp;JORDAN</strong> at checkout for the group rate. Both are under a mile from the
+          Foundry.</p>
+      </div>
+      <div class="travel-card" data-anim="travel-3" data-io style="--d:.34s;--dur:1.1s">
+        <img src="public/images/travel-3.jpg" alt="Restaurant" />
+        <div class="tag">eat &amp; wander</div>
+        <h3>Our favorite spots</h3>
+        <p>Tartine for the morning after. Zuni Cafe for Friday lunch. Lands End if your legs are up for a walk.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== REGISTRY ===== -->
+  <section class="registry" id="registry">
+    <div class="registry-text">
+      <div class="eyebrow" data-anim="rise" data-io style="--d:.05s">the registry</div>
+      <h2 data-anim="rise" data-io style="--d:.15s;--dur:1.2s">Your presence is the gift.</h2>
+      <p data-anim="rise" data-io style="--d:.3s">We have chosen not to have a registry or request gifts. Being able to spend this time together and celebrate as a community is truly what matters most to us.</p>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-big" data-anim="title" data-io style="--dur:1.4s">
+      See you <span class="script">soon.</span>
+    </div>
+    <div class="hashtag" data-anim="rise-sm" data-io style="--d:.3s">#EmmaAndJordan2035</div>
+    <div class="footer-bottom">
+      <div data-anim="rise-sm" data-io style="--d:.45s">© 2026 webforwedd.com</div>
+    </div>
+  </footer>
+
+  <script>
+    /* ================= SMOOTH SCROLL ================= */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const id = a.getAttribute('href');
+        if (id.length > 1) {
+          const el = document.querySelector(id);
+          if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+        }
+      });
+    });
+
+    function openRSVP() {
+      const name = prompt("What's your name?");
+      if (!name) return;
+      const attending = confirm(name + ", will you be joining us on Oct 26?");
+      const message = attending
+        ? "Hi, I'm " + name + ". RSVP for Emma & Jordan's wedding: Attending Yes"
+        : "Hi, I'm " + name + ". RSVP for Emma & Jordan's wedding: Attending No";
+      const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+      window.open(whatsappUrl, "_blank");
+    }
+
+    /* ================= HERO ON-LOAD SEQUENCE =================
+       Elements in .hero with [data-anim] but without [data-io]
+       animate as soon as fonts/images are ready. */
+    window.addEventListener('load', () => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.hero [data-anim]').forEach(el => {
+          if (!el.hasAttribute('data-io')) el.classList.add('is-in');
+        });
+      });
+    });
+    // Safety fallback — in case 'load' is slow, trigger after 200ms
+    setTimeout(() => {
+      document.querySelectorAll('.hero [data-anim]').forEach(el => {
+        if (!el.hasAttribute('data-io')) el.classList.add('is-in');
+      });
+    }, 250);
+
+    /* ================= SCROLL REVEAL (IntersectionObserver) ================= */
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+
+    document.querySelectorAll('[data-io]').forEach(el => io.observe(el));
+
+    // data-io-self: container itself toggles is-in (for image scale inside)
+    const ioSelf = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          ioSelf.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.25 });
+    document.querySelectorAll('[data-io-self]').forEach(el => ioSelf.observe(el));
+
+    /* ================= PARALLAX (rAF, throttled) ================= */
+    const parallaxEls = Array.from(document.querySelectorAll('[data-parallax]')).map(el => ({
+      el,
+      rate: parseFloat(el.dataset.parallax) || 0.1,
+      baseY: 0
+    }));
+
+    let ticking = false;
+    function updateParallax() {
+      const viewportH = window.innerHeight;
+      parallaxEls.forEach(({ el, rate }) => {
+        const rect = el.getBoundingClientRect();
+        // Center-of-element distance from viewport center (normalized)
+        const center = rect.top + rect.height / 2;
+        const delta = center - viewportH / 2;
+        // Only animate when near viewport (perf)
+        if (rect.bottom < -200 || rect.top > viewportH + 200) return;
+        const y = delta * rate * -1; // negative so faster elements rise earlier
+        el.style.setProperty('--py', y.toFixed(2) + 'px');
+      });
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    updateParallax();
+  </script>
+
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
