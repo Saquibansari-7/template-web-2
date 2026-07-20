@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useWebsiteContext } from './context/WebsiteContext';
 import { syncContentToDOM, saveImageToDB, loadImageFromDB } from './utils/contentSync';
+import { saveContent } from './services/saveContent';
+import { uploadImage } from './services/uploadImage';
 import './AdminPanel.css';
 
 function AdminPanel() {
   const { content, sections, updateContent, updateSection, saveToLocalStorage } = useWebsiteContext();
+  const siteId = new URLSearchParams(window.location.search).get('site');
   const [activeTab, setActiveTab] = useState('hero');
   const [imagePreview, setImagePreview] = useState<{ [key: string]: string }>({});
   const [tempImages, setTempImages] = useState<{ [key: string]: string }>({});
@@ -50,16 +53,27 @@ function AdminPanel() {
       const base64 = e.target?.result as string;
 
       try {
-        // Save image to IndexedDB for persistence
+        // Save image to IndexedDB for persistence (existing behavior)
         const imageKey = `${section}-${field}`;
         await saveImageToDB(imageKey, base64);
+
+        // Upload image to Supabase Storage (Step 8)
+        let publicUrl = '';
+        if (siteId) {
+          try {
+            publicUrl = await uploadImage(siteId, file);
+          } catch (err) {
+            console.error('Supabase image upload failed:', err);
+          }
+        }
 
         // Store image for preview and DOM sync
         setTempImages((prev) => ({ ...prev, [imageKey]: base64 }));
         setImagePreview((prev) => ({ ...prev, [imageKey]: base64 }));
 
         // Store a reference in content (not the actual data)
-        updateContent(section as keyof typeof content, field, `db:${imageKey}`);
+        // Use the Supabase public URL when available, otherwise the local db reference
+        updateContent(section as keyof typeof content, field, publicUrl || `db:${imageKey}`);
       } catch (error) {
         console.error('Error saving image:', error);
         alert('Error saving image. Please try again.');
@@ -79,6 +93,31 @@ function AdminPanel() {
       // Sync the saved content to the DOM immediately
       await syncContentToDOM(content, tempImages);
       console.log('Successfully synced content to DOM');
+
+      // Save content to Supabase (Step 5)
+      if (siteId) {
+        const { error } = await saveContent(siteId, {
+          hero: content.hero,
+          story: content.story,
+          gallery: (content as any).gallery,
+          events: (content as any).events,
+          venue: content.ceremony,
+          family: (content as any).family,
+          rsvp: content.rsvp,
+          settings: (content as any).settings,
+          intro: content.intro,
+          faq: content.faq,
+          travel: content.travel,
+          registry: content.registry,
+          footer: content.footer,
+          sections,
+        });
+        if (error) {
+          console.error('Supabase save error:', error);
+        } else {
+          console.log('Successfully saved to Supabase');
+        }
+      }
 
       // Show success message
       alert('Changes saved and applied to the website!');

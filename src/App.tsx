@@ -4,36 +4,42 @@ import AdminPanel from './AdminPanel'
 import AdminLogin from './AdminLogin'
 
 import { loadContentFromLocalStorage } from './utils/contentSync'
+import { loadContent } from './services/loadContent'
+import { syncContentToDOM } from './utils/contentSync'
 import './App.css'
 
 function App() {
   const [isFAQOpen, setIsFAQOpen] = useState(false)
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
   const [showAdminModal, setShowAdminModal] = useState(false)
-  const [showAdminButton, setShowAdminButton] = useState(false)
+
+  const siteId = new URLSearchParams(window.location.search).get('site')
+  const openAdmin = new URLSearchParams(window.location.search).has('admin')
 
 
   useEffect(() => {
-    // Load content from localStorage on mount
+    // Load content from localStorage on mount (existing behavior)
     loadContentFromLocalStorage().catch(console.error)
-    
+
+    // Load content from Supabase if a site id is present
+    if (siteId) {
+      loadContent(siteId)
+        .then((data) => {
+          if (data) {
+            syncContentToDOM(data);
+          }
+        })
+        .catch(console.error);
+    }
+
     // Expose function to window so HTML button can call it
     window.openFAQModal = () => setIsFAQOpen(true)
-    
-    // Check URL parameters for admin mode
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('admin') === 'true') {
-      // Only check authentication from localStorage when in admin mode
-      const isAuth = localStorage.getItem('adminAuthenticated') === 'true'
-      console.log('Admin mode detected, checking auth from localStorage:', isAuth)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setIsAdminAuthenticated(isAuth) // Initialization from localStorage
-      setShowAdminButton(true)
-      console.log('Admin mode detected, showing gear icon')
+
+    // Open admin panel directly when ?admin is present in the URL
+    if (openAdmin) {
+      setShowAdminModal(true)
     } else {
-      // Clear any previous authentication when not in admin mode
       localStorage.removeItem('adminAuthenticated')
-      console.log('Normal mode - cleared any previous authentication')
     }
     
     // Trigger hero animations
@@ -71,17 +77,6 @@ function App() {
   return (
     <>
       <FAQModal isOpen={isFAQOpen} onClose={() => setIsFAQOpen(false)} />
-
-      {/* Admin Access Button - Show only when ?admin=true in URL */}
-      {showAdminButton && (
-        <button
-          className="admin-access-btn"
-          onClick={() => setShowAdminModal(true)}
-          title="Click to access admin panel"
-        >
-          ⚙️
-        </button>
-      )}
 
       {/* Admin Panel - Show if authenticated */}
       {isAdminAuthenticated && <AdminPanel />}
