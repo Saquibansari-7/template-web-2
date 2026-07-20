@@ -72,7 +72,7 @@ export interface WebsiteContextType {
 const defaultContent: WebsiteContent = {
   hero: {
     title: "WE'RE TYING THE KNOT!",
-    date: "Friday, October 26, 2035 · 5:00 PM",
+    date: "Friday, October 26, 2026 · 5:00 PM",
     place: "Safdie Foundry, San Francisco, CA",
     image: 'public/images/couple-hero.jpg',
   },
@@ -85,7 +85,7 @@ const defaultContent: WebsiteContent = {
     image: 'public/images/couple-2.jpg',
   },
   ceremony: {
-    date: 'October 26, 2035',
+    date: 'October 26, 2026',
     time: '5:00 PM sharp',
     place: 'Safdie Foundry, San Francisco',
   },
@@ -113,7 +113,7 @@ const defaultContent: WebsiteContent = {
   },
   footer: {
     heading: 'See you soon.',
-    hashtag: '#EmmaAndJordan2035',
+    hashtag: '#EmmaAndJordan2026',
     copyright: '© 2026 webforwedd.com',
   },
   rsvp: {

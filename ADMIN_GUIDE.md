@@ -10,7 +10,7 @@ Press `Ctrl+Shift+A` on any page to trigger admin mode.
 
 ## Login Credentials
 
-**Default Password:** `admin2035`
+**Default Password:** `admin2026`
 
 > ⚠️ **Security Note:** Change this password in the code (`src/AdminLogin.tsx`) before deploying to production!
 
@@ -54,7 +54,7 @@ Configure WhatsApp RSVP:
 ## How to Use
 
 1. **Click the Settings Button** (⚙️) in the bottom-right corner
-2. **Login** with password: `admin2035`
+2. **Login** with password: `admin2026`
 3. **Select a Section** from the tabs at the top (Hero, Intro, Ceremony, etc.)
 4. **Edit Content:**
    - For text: Click the input field and type
@@ -80,7 +80,7 @@ All changes are automatically saved to your browser's local storage and will per
 - **Image:** Couple photo
 
 ### Ceremony Section
-- **Date:** October 26, 2035 (customizable)
+- **Date:** October 26, 2026 (customizable)
 - **Time:** 5:00 PM sharp (customizable)
 - **Place:** Venue details
 
@@ -159,8 +159,8 @@ Click the **"Logout"** button in the top-right corner of the admin panel to exit
 
 To change the admin password:
 1. Open `src/AdminLogin.tsx`
-2. Find: `if (password === 'admin2035')`
-3. Change `'admin2035'` to your new password
+2. Find: `if (password === 'admin2026')`
+3. Change `'admin2026'` to your new password
 4. Rebuild the project
 
 ## Troubleshooting
