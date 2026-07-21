@@ -4,6 +4,10 @@ export async function uploadImage(
   siteId: string,
   file: File
 ) {
+  if (!supabase || typeof supabase.storage !== "object") {
+    throw new Error("Supabase not configured - check your .env file");
+  }
+
   const path = `${siteId}/${Date.now()}-${file.name}`;
 
   const { error } = await supabase.storage
