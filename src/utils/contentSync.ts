@@ -132,5 +132,4 @@ export function syncContentToDOM(content: WebsiteContent) {
     footerBig.innerHTML = headingParts[0] + '<span class="script">soon</span>' + (headingParts[1] || '');
   }
   if (hashtag) hashtag.textContent = content.footer.hashtag;
-  if (footerBottom) footerBottom.textContent = content.footer.copyright;
 }

@@ -275,6 +275,16 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     updateParallax();
+
+    const footerIO = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          footerIO.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.footer [data-anim]').forEach(el => footerIO.observe(el));
   </script>
 
   <script type="module" src="/src/main.tsx"></script>
