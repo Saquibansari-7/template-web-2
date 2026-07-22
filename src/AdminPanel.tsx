@@ -1,51 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useWebsiteContext } from './context/WebsiteContext';
-import { syncContentToDOM, saveImageToDB, loadImageFromDB } from './utils/contentSync';
-import { saveContent } from './services/saveContent';
 import { uploadImage } from './services/uploadImage';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const { content, sections, updateContent, updateSection, saveToLocalStorage } = useWebsiteContext();
-  const siteId = new URLSearchParams(window.location.search).get('site');
+  const { content, sections, updateContent, updateSection, saveContent: saveContentToSupabase } = useWebsiteContext();
+  const siteId = new URLSearchParams(window.location.search).get('site') || 'default';
   const [activeTab, setActiveTab] = useState('hero');
   const [imagePreview, setImagePreview] = useState<{ [key: string]: string }>({});
-  const [tempImages, setTempImages] = useState<{ [key: string]: string }>({});
-
-  // Load saved images on mount
-  useEffect(() => {
-    const loadSavedImages = async () => {
-      const savedContent = localStorage.getItem('weddingContent');
-      if (savedContent) {
-        try {
-          const parsed = JSON.parse(savedContent);
-          // Extract image references from saved content and load from IndexedDB
-          const savedImages: { [key: string]: string } = {};
-
-          for (const [section, sectionData] of Object.entries(parsed as any)) {
-            if (sectionData && typeof sectionData === 'object') {
-              for (const [field, value] of Object.entries(sectionData)) {
-                if (field === 'image' && typeof value === 'string' && value.startsWith('db:')) {
-                  const imageKey = value.slice(3); // Remove 'db:' prefix
-                  const imageData = await loadImageFromDB(imageKey);
-                  if (imageData) {
-                    savedImages[imageKey] = imageData;
-                  }
-                }
-              }
-            }
-          }
-
-          setTempImages(savedImages);
-          setImagePreview(savedImages);
-        } catch (e) {
-          console.error('Error loading saved images:', e);
-        }
-      }
-    };
-
-    loadSavedImages();
-  }, []);
 
   const handleImageUpload = async (section: string, field: string, file: File) => {
     const reader = new FileReader();
@@ -53,11 +15,6 @@ function AdminPanel() {
       const base64 = e.target?.result as string;
 
       try {
-        // Save image to IndexedDB for persistence (existing behavior)
-        const imageKey = `${section}-${field}`;
-        await saveImageToDB(imageKey, base64);
-
-        // Upload image to Supabase Storage (Step 8)
         let publicUrl = '';
         if (siteId) {
           try {
@@ -67,13 +24,8 @@ function AdminPanel() {
           }
         }
 
-        // Store image for preview and DOM sync
-        setTempImages((prev) => ({ ...prev, [imageKey]: base64 }));
-        setImagePreview((prev) => ({ ...prev, [imageKey]: base64 }));
-
-        // Store a reference in content (not the actual data)
-        // Use the Supabase public URL when available, otherwise the local db reference
-        updateContent(section as keyof typeof content, field, publicUrl || `db:${imageKey}`);
+        setImagePreview((prev) => ({ ...prev, [`${section}-${field}`]: base64 }));
+        updateContent(section as keyof typeof content, field, publicUrl || base64);
       } catch (error) {
         console.error('Error saving image:', error);
         alert('Error saving image. Please try again.');
@@ -85,42 +37,12 @@ function AdminPanel() {
   const handleSave = async () => {
     try {
       console.log('Attempting to save content...');
+      console.log('siteId:', siteId);
 
-      // Save to localStorage (text content only, images are in IndexedDB)
-      saveToLocalStorage();
-      console.log('Successfully saved to localStorage');
+      await saveContentToSupabase(siteId);
+      console.log('Successfully saved to Supabase');
 
-      // Sync the saved content to the DOM immediately
-      await syncContentToDOM(content, tempImages);
-      console.log('Successfully synced content to DOM');
-
-      // Save content to Supabase (Step 5)
-      if (siteId) {
-        const { error } = await saveContent(siteId, {
-          hero: content.hero,
-          story: content.story,
-          gallery: (content as any).gallery,
-          events: (content as any).events,
-          venue: content.ceremony,
-          family: (content as any).family,
-          rsvp: content.rsvp,
-          settings: (content as any).settings,
-          intro: content.intro,
-          faq: content.faq,
-          travel: content.travel,
-          registry: content.registry,
-          footer: content.footer,
-          sections,
-        });
-        if (error) {
-          console.error('Supabase save error:', error);
-        } else {
-          console.log('Successfully saved to Supabase');
-        }
-      }
-
-      // Show success message
-      alert('Changes saved and applied to the website!');
+      alert('Changes saved successfully!');
     } catch (error) {
       console.error('Error in handleSave:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -206,9 +128,6 @@ function AdminPanel() {
               {(imagePreview['hero-image'] || (content.hero.image && (content.hero.image.startsWith('data:image') || content.hero.image.startsWith('db:')))) && (
                 <img src={imagePreview['hero-image'] || (content.hero.image.startsWith('data:image') ? content.hero.image : '')} alt="Hero" className="admin-preview" />
               )}
-              {tempImages['hero-image'] && (
-                <p className="image-note">✓ Image loaded and will be applied to website</p>
-              )}
             </div>
           </div>
         )}
@@ -266,9 +185,6 @@ function AdminPanel() {
               />
               {(imagePreview['intro-image'] || (content.intro.image && (content.intro.image.startsWith('data:image') || content.intro.image.startsWith('db:')))) && (
                 <img src={imagePreview['intro-image'] || (content.intro.image.startsWith('data:image') ? content.intro.image : '')} alt="Intro" className="admin-preview" />
-              )}
-              {tempImages['intro-image'] && (
-                <p className="image-note">✓ Image loaded and will be applied to website</p>
               )}
             </div>
           </div>
@@ -358,9 +274,6 @@ function AdminPanel() {
               />
               {(imagePreview['story-image'] || (content.story.image && (content.story.image.startsWith('data:image') || content.story.image.startsWith('db:')))) && (
                 <img src={imagePreview['story-image'] || (content.story.image.startsWith('data:image') ? content.story.image : '')} alt="Story" className="admin-preview" />
-              )}
-              {tempImages['story-image'] && (
-                <p className="image-note">✓ Image loaded and will be applied to website</p>
               )}
             </div>
           </div>
@@ -500,7 +413,7 @@ function AdminPanel() {
               <input
                 type="checkbox"
                 checked={content.rsvp.enableWhatsApp}
-                onChange={(e) => updateContent('rsvp', 'enableWhatsApp', e.target.checked ? 'true' : 'false')}
+                onChange={(e) => updateContent('rsvp', 'enableWhatsApp', e.target.checked)}
               />
               <span>Enable WhatsApp RSVP</span>
             </label>
@@ -512,7 +425,7 @@ function AdminPanel() {
         <button className="admin-save-btn" onClick={handleSave}>
           Save Changes
         </button>
-        <p className="admin-save-note">Changes are saved to your browser and applied immediately to the website</p>
+        <p className="admin-save-note">Changes are saved to Supabase and applied immediately to the website</p>
       </div>
     </div>
   );

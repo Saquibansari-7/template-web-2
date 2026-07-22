@@ -1,10 +1,24 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { loadContent } from '../services/loadContent';
+import { supabase } from '../lib/supabase';
 
 export interface SectionSettings {
   [key: string]: {
     visible: boolean;
   };
 }
+
+export type PartialWebsiteContent = Partial<{
+  hero: { title: string; date: string; place: string; image: string };
+  intro: { eyebrow: string; heading: string; paragraph1: string; paragraph2: string; signature: string; image: string };
+  ceremony: { date: string; time: string; place: string };
+  story: { eyebrow: string; heading: string; paragraph1: string; paragraph2: string; signature: string; image: string };
+  faq: { heading: string; paragraph: string };
+  travel: { eyebrow: string; heading: string; paragraph: string };
+  registry: { eyebrow: string; heading: string; paragraph: string };
+  footer: { heading: string; hashtag: string; copyright: string };
+  rsvp: { phoneNumber: string; enableWhatsApp: boolean };
+}>;
 
 export interface WebsiteContent {
   hero: {
@@ -62,13 +76,11 @@ export interface WebsiteContent {
 export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
-  updateContent: (section: keyof WebsiteContent, field: string, value: string) => void;
+  updateContent: (section: keyof WebsiteContent, field: string, value: string | boolean) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
-  saveToLocalStorage: () => void;
-  loadFromLocalStorage: () => void;
+  saveContent: (siteId: string) => Promise<void>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 const defaultContent: WebsiteContent = {
   hero: {
     title: "WE'RE TYING THE KNOT!",
@@ -133,6 +145,29 @@ const defaultSections: SectionSettings = {
   footer: { visible: true },
 };
 
+const defaultSiteId = 'default';
+
+const isSupabaseConfigured = () => {
+  return !!supabase && typeof supabase.from === 'function';
+};
+
+const getStoredSiteId = (): string => {
+  try {
+    const stored = localStorage.getItem('weddingSiteId');
+    return stored || defaultSiteId;
+  } catch {
+    return defaultSiteId;
+  }
+};
+
+const storeSiteId = (id: string) => {
+  try {
+    localStorage.setItem('weddingSiteId', id);
+  } catch {
+    // localStorage not available
+  }
+};
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const WebsiteContext = createContext<WebsiteContextType | undefined>(undefined);
 
@@ -144,23 +179,32 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
   const [content, setContent] = useState<WebsiteContent>(defaultContent);
   const [sections, setSections] = useState<SectionSettings>(defaultSections);
 
-  const loadFromLocalStorage = () => {
-    const savedContent = localStorage.getItem('weddingContent');
-    const savedSections = localStorage.getItem('weddingSections');
-
-    if (savedContent) {
-      setContent(JSON.parse(savedContent));
-    }
-    if (savedSections) {
-      setSections(JSON.parse(savedSections));
-    }
-  };
-
   useEffect(() => {
-    loadFromLocalStorage(); // eslint-disable-line react-hooks/exhaustive-deps
+    const siteId = getStoredSiteId();
+    
+    if (isSupabaseConfigured()) {
+      loadContent(siteId)
+        .then((data) => {
+          if (data) {
+            const mergedData = data as PartialWebsiteContent;
+            setContent(prev => ({
+              ...prev,
+              ...mergedData,
+              rsvp: {
+                ...prev.rsvp,
+                ...(mergedData.rsvp || {}),
+              },
+            }));
+            storeSiteId(siteId);
+          }
+        })
+        .catch((error) => {
+          console.error('Error loading content from Supabase:', error);
+        });
+    }
   }, []);
 
-  const updateContent = (section: keyof WebsiteContent, field: string, value: string) => {
+  const updateContent = (section: keyof WebsiteContent, field: string, value: string | boolean) => {
     setContent((prev) => ({
       ...prev,
       [section]: {
@@ -177,14 +221,25 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     }));
   };
 
-  const saveToLocalStorage = () => {
-    try {
-      localStorage.setItem('weddingContent', JSON.stringify(content));
-      localStorage.setItem('weddingSections', JSON.stringify(sections));
-      return true;
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
-      throw error;
+  const saveContentToSupabase = async (siteId: string) => {
+    if (!isSupabaseConfigured()) {
+      console.error('Supabase not configured');
+      return;
+    }
+
+    const result = await supabase
+      .from('site_content')
+      .upsert({
+        site_id: siteId,
+        data: {
+          ...content,
+          sections,
+        },
+        updated_at: new Date().toISOString(),
+      });
+
+    if (result.error) {
+      console.error('Error saving to Supabase:', result.error);
     }
   };
 
@@ -195,8 +250,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
         sections,
         updateContent,
         updateSection,
-        saveToLocalStorage,
-        loadFromLocalStorage,
+        saveContent: saveContentToSupabase,
       }}
     >
       {children}
@@ -204,6 +258,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWebsiteContext() {
   const context = React.useContext(WebsiteContext);
   if (!context) {
