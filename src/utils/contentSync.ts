@@ -27,7 +27,7 @@ export function syncContentToDOM(content: WebsiteContent) {
 
   const heroImg = document.querySelector('.hero-image img') as HTMLImageElement;
   if (heroImg && content.hero.image) {
-    heroImg.src = content.hero.image.startsWith('data:image') ? content.hero.image : '';
+    heroImg.src = content.hero.image;
   }
 
   const splitCard = document.querySelector('.split-card');
@@ -46,7 +46,7 @@ export function syncContentToDOM(content: WebsiteContent) {
 
   const splitImg = document.querySelector('.split-img-wrap img') as HTMLImageElement;
   if (splitImg && content.intro.image) {
-    splitImg.src = content.intro.image.startsWith('data:image') ? content.intro.image : '';
+    splitImg.src = content.intro.image;
   }
 
   const ceremonyCard = document.querySelector('.ceremony-card');
@@ -62,7 +62,7 @@ export function syncContentToDOM(content: WebsiteContent) {
 
   const storyImg = document.querySelector('.story-img img') as HTMLImageElement;
   if (storyImg && content.story.image) {
-    storyImg.src = content.story.image.startsWith('data:image') ? content.story.image : '';
+    storyImg.src = content.story.image;
   }
 
   const storyText = document.querySelector('.story-text');
