@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import FAQModal from './FAQModal'
 import AdminPanel from './AdminPanel'
 import AdminLogin from './AdminLogin'
+import { loadContent } from './services/loadContent'
+import { syncContentToDOM } from './utils/contentSync'
 import './App.css'
 
 function App() {
@@ -17,6 +19,16 @@ function App() {
     }
 
     window.openFAQModal = () => setIsFAQOpen(true)
+
+    const siteId = new URLSearchParams(window.location.search).get('site') || 'default'
+    
+    loadContent(siteId)
+      .then((data) => {
+        if (data) {
+          syncContentToDOM(data);
+        }
+      })
+      .catch(console.error);
 
     const triggerAnimations = () => {
       document.querySelectorAll('.hero [data-anim]').forEach(el => {
