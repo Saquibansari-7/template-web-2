@@ -13,7 +13,7 @@ export type PartialWebsiteContent = Partial<{
   intro: { eyebrow: string; heading: string; paragraph1: string; paragraph2: string; signature: string; image: string };
   ceremony: { date: string; time: string; place: string };
   story: { eyebrow: string; heading: string; paragraph1: string; paragraph2: string; signature: string; image: string };
-  faq: { heading: string; paragraph: string };
+  faq: { heading: string; paragraph: string; image: string };
   travel: { eyebrow: string; heading: string; paragraph: string };
   registry: { eyebrow: string; heading: string; paragraph: string };
   footer: { heading: string; hashtag: string; copyright: string };
@@ -51,6 +51,7 @@ export interface WebsiteContent {
   faq: {
     heading: string;
     paragraph: string;
+    image: string;
   };
   travel: {
     eyebrow: string;
@@ -112,6 +113,7 @@ const defaultContent: WebsiteContent = {
   faq: {
     heading: "You've Got Questions...",
     paragraph: "Dress code? Dogs allowed? Where to stay? Is there a late-night taco bar? (Yes.) We've answered all the big ones — and the weird ones — so you can show up ready to celebrate.",
+    image: 'public/images/couple-3.jpg',
   },
   travel: {
     eyebrow: 'travel & stay',

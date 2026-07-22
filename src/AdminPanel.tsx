@@ -303,6 +303,17 @@ function AdminPanel() {
                 rows={4}
               />
             </div>
+            <div className="admin-field">
+              <label>Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => e.target.files && handleImageUpload('faq', 'image', e.target.files[0])}
+              />
+              {(imagePreview['faq-image'] || (content.faq.image && (content.faq.image.startsWith('data:image') || content.faq.image.startsWith('db:')))) && (
+                <img src={imagePreview['faq-image'] || (content.faq.image.startsWith('data:image') ? content.faq.image : '')} alt="FAQ" className="admin-preview" />
+              )}
+            </div>
           </div>
         )}
 
@@ -429,7 +440,7 @@ function AdminPanel() {
         <button className="admin-save-btn" onClick={handleSave}>
           Save Changes
         </button>
-        <p className="admin-save-note">Changes are saved to Supabase and applied immediately to the website</p>
+        <p className="admin-save-note">Changes are saved and applied immediately to the website</p>
       </div>
     </div>
   );

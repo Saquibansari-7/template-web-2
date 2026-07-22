@@ -96,6 +96,11 @@ export function syncContentToDOM(content: WebsiteContent) {
     if (p) p.textContent = content.faq.paragraph;
   }
 
+  const faqImg = document.querySelector('#faq .angled-img img') as HTMLImageElement;
+  if (faqImg && content.faq.image) {
+    faqImg.src = content.faq.image;
+  }
+
   const travelHead = document.querySelector('.travel-head');
   if (travelHead) {
     const eyebrow = travelHead.querySelector('.eyebrow');
