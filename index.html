@@ -198,7 +198,7 @@
 
   <div class="logo-wrap" id="logoWrap">
     <div class="logo-ring"></div>
-    <img class="logo-img" src="public/images/c-stamp.png" alt="Logo" />
+    <img class="logo-img" src="/images/c-stamp.png" alt="Logo" />
   </div>
 </div>
 
@@ -211,7 +211,7 @@
     </h1>
 
     <div class="hero-image" data-anim="zoom" data-parallax="0.12" style="--d:.5s;--dur:1.4s">
-      <img src="public/images/couple-hero.jpg" alt="Emma &amp; Jordan" />
+      <img src="/images/couple-hero.jpg" alt="Emma &amp; Jordan" />
     </div>
 
     <div class="hero-meta left" data-anim="slide-l" style="--d:1.0s;--dur:1.1s">
@@ -244,7 +244,7 @@
     </div>
     <div class="split-right" data-io-self>
       <div class="split-img-wrap">
-        <img src="public/images/couple-2.jpg" alt="Couple" />
+        <img src="/images/couple-2.jpg" alt="Couple" />
   </section>
 
   <!-- ===== CEREMONY CARD ===== -->
@@ -271,7 +271,7 @@
   <!-- ===== STORY ===== -->
   <section class="story" id="story">
     <div class="story-img" data-anim="tilt-in-r" data-io data-parallax="-0.06" style="--dur:1.3s">
-      <img src="public/images/story.jpg" alt="Our story" />
+      <img src="/images/story.jpg" alt="Our story" />
     </div>
     <div class="story-text">
       <div class="eyebrow" data-anim="rise" data-io style="--d:.1s;--dur:1s">our story</div>
@@ -288,7 +288,7 @@
   <!-- ===== FAQ (angled) ===== -->
   <section class="angled" id="faq">
     <div class="angled-img" data-anim="diag-img" data-io data-parallax="-0.08" style="--dur:1.4s">
-      <img src="public/images/couple-3.jpg" alt="Couple laughing" />
+      <img src="/images/couple-3.jpg" alt="Couple laughing" />
     </div>
     <div class="angled-red" data-anim="diag-red" data-io style="--d:.15s;--dur:1.4s">
       <h2>You've Got <span class="script">Questions...</span></h2>
@@ -308,21 +308,21 @@
     </div>
     <div class="travel-grid">
       <div class="travel-card" data-anim="travel-1" data-io style="--d:.1s;--dur:1.1s">
-        <img src="public/images/travel-1.jpg" alt="San Francisco" />
+        <img src="/images/travel-1.jpg" alt="San Francisco" />
         <div class="tag">getting there</div>
         <h3>Fly into SFO or OAK</h3>
         <p>SFO is a 20-min ride to the venue. OAK is 25. Both have reliable rideshare — Caltrain works too if you're
           feeling scenic.</p>
       </div>
       <div class="travel-card" data-anim="travel-2" data-io style="--d:.22s;--dur:1.1s">
-        <img src="public/images/travel-2.jpg" alt="Hotel room" />
+        <img src="/images/travel-2.jpg" alt="Hotel room" />
         <div class="tag">where to stay</div>
         <h3>The Proper &amp; The Battery</h3>
         <p>Use code <strong>EMMA&amp;JORDAN</strong> at checkout for the group rate. Both are under a mile from the
           Foundry.</p>
       </div>
       <div class="travel-card" data-anim="travel-3" data-io style="--d:.34s;--dur:1.1s">
-        <img src="public/images/travel-3.jpg" alt="Restaurant" />
+        <img src="/images/travel-3.jpg" alt="Restaurant" />
         <div class="tag">eat &amp; wander</div>
         <h3>Our favorite spots</h3>
         <p>Tartine for the morning after. Zuni Cafe for Friday lunch. Lands End if your legs are up for a walk.</p>
@@ -533,7 +533,7 @@
         gsap.to(overlay, { opacity: 0, duration: 1, delay: 1.6, ease: 'power2.inOut', onComplete: () => { overlay.style.display = 'none'; } });
       }
 
-      const audio = new Audio('public/images/Christina Perri - wedding.mp3');
+      const audio = new Audio('/images/Christina Perri - wedding.mp3');
       audio.loop = true;
       audio.volume = 0.5;
       let musicPlaying = false;
