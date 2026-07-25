@@ -504,6 +504,8 @@
         hint.classList.add('hidden');
         document.body.style.overflow = '';
 
+        startMusic();
+
         const logoWrap = document.getElementById('logoWrap');
         gsap.to(logoWrap, { scale: 0.8, opacity: 0, duration: 0.5, ease: 'power2.in' });
 
@@ -561,14 +563,18 @@
         musicDisk.addEventListener('click', toggleMusic);
       }
 
-      stage.addEventListener('click', openCurtain);
-      stage.addEventListener('touchstart', openCurtain, { passive: true });
-      document.getElementById('logoWrap').addEventListener('click', function(e){
+      stage.addEventListener('click', function(e){
         startMusic();
         openCurtain();
       });
-      document.getElementById('logoWrap').addEventListener('touchstart', function(e){
+      stage.addEventListener('touchstart', function(e){
         startMusic();
+        openCurtain();
+      }, { passive: true });
+      document.getElementById('logoWrap').addEventListener('click', function(e){
+        openCurtain();
+      });
+      document.getElementById('logoWrap').addEventListener('touchstart', function(e){
         openCurtain();
       }, { passive: true });
       document.addEventListener('keydown', function(e){
