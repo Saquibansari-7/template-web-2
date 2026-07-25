@@ -42,18 +42,10 @@ function AdminPanel() {
 
   const handleSave = async () => {
     try {
-      console.log('Attempting to save content...');
-      console.log('siteId:', siteId);
-
       await saveContentToSupabase(siteId);
-      console.log('Successfully saved to Supabase');
-
       syncContentToDOM(content);
-      console.log('DOM updated');
-
       alert('Changes saved and applied to the website!');
     } catch (error) {
-      console.error('Error in handleSave:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`Error saving changes: ${errorMessage}`);
     }

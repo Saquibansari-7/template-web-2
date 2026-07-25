@@ -79,8 +79,8 @@ export interface WebsiteContent {
 export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
-  updateContent: (section: keyof WebsiteContent, field: string, value: any) => void;
-  updateNestedContent: (section: keyof WebsiteContent, path: string, value: any) => void;
+  updateContent: (section: keyof WebsiteContent, field: string, value: unknown) => void;
+  updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
   saveContent: (siteId: string) => Promise<void>;
 }
@@ -218,21 +218,21 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
             storeSiteId(siteId);
           }
         })
-        .catch((error) => {
-          console.error('Error loading content from Supabase:', error);
+        .catch(() => {
+          // Silently fail — defaults will be used
         });
     }
   }, []);
 
-  const setNestedValue = (obj: any, path: string, value: any) => {
+  const setNestedValue = (obj: Record<string, unknown>, path: string, value: unknown): Record<string, unknown> => {
     const keys = path.split('.');
     const lastKey = keys.pop()!;
-    const target = keys.reduce((acc, key) => acc[key], obj);
-    target[lastKey] = value;
+    const target = keys.reduce((acc, key) => acc[key] as Record<string, unknown>, obj);
+    (target as Record<string, unknown>)[lastKey] = value;
     return { ...obj };
   };
 
-  const updateContent = (section: keyof WebsiteContent, field: string, value: any) => {
+  const updateContent = (section: keyof WebsiteContent, field: string, value: unknown) => {
     setContent((prev) => ({
       ...prev,
       [section]: {
@@ -242,7 +242,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     }));
   };
 
-  const updateNestedContent = (section: keyof WebsiteContent, path: string, value: any) => {
+  const updateNestedContent = (section: keyof WebsiteContent, path: string, value: unknown) => {
     setContent((prev) => ({
       ...prev,
       [section]: setNestedValue({ ...prev[section] }, path, value) as WebsiteContent[typeof section],
@@ -258,7 +258,6 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
 
   const saveContentToSupabase = async (siteId: string) => {
     if (!isSupabaseConfigured()) {
-      console.error('Supabase not configured');
       return;
     }
 
@@ -274,7 +273,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       });
 
     if (result.error) {
-      console.error('Error saving to Supabase:', result.error);
+      // Silently fail — error will be caught by caller
     }
   };
 

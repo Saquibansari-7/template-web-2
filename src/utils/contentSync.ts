@@ -1,28 +1,31 @@
 import { WebsiteContent } from '../context/WebsiteContext';
+import DOMPurify from 'dompurify';
 
 export function syncContentToDOM(content: WebsiteContent) {
   const heroTitle = document.querySelector('.hero-title');
   if (heroTitle && content.hero?.title) {
-    heroTitle.innerHTML = content.hero.title
-      .split('').map((char: string) => {
-        if (char === 'W' || char === 'K') {
-          return `<span class="swash">${char}</span>`;
-        }
-        return char;
-      }).join('');
+    heroTitle.innerHTML = DOMPurify.sanitize(
+      content.hero.title
+        .split('').map((char: string) => {
+          if (char === 'W' || char === 'K') {
+            return `<span class="swash">${char}</span>`;
+          }
+          return char;
+        }).join('')
+    );
   }
 
   const heroMetas = document.querySelectorAll('.hero-meta');
   if (heroMetas.length >= 1) {
     const leftMeta = heroMetas[0];
     const dateText = leftMeta.querySelector('.label')?.textContent || 'the date';
-    leftMeta.innerHTML = `<span class="label">${dateText}</span>${content.hero.date}`;
+    leftMeta.innerHTML = DOMPurify.sanitize(`<span class="label">${dateText}</span>${content.hero.date}`);
   }
 
   if (heroMetas.length >= 2) {
     const rightMeta = heroMetas[1];
     const placeText = rightMeta.querySelector('.label')?.textContent || 'the place';
-    rightMeta.innerHTML = `<span class="label">${placeText}</span>${content.hero.place}`;
+    rightMeta.innerHTML = DOMPurify.sanitize(`<span class="label">${placeText}</span>${content.hero.place}`);
   }
 
   const heroImg = document.querySelector('.hero-image img') as HTMLImageElement;
@@ -53,10 +56,10 @@ export function syncContentToDOM(content: WebsiteContent) {
   if (ceremonyCard) {
     const ceremonyRows = ceremonyCard.querySelectorAll('.ceremony-row .val');
     if (ceremonyRows.length >= 1) {
-      ceremonyRows[0].innerHTML = `${content.ceremony.date}<br>${content.ceremony.time}`;
+      ceremonyRows[0].innerHTML = DOMPurify.sanitize(`${content.ceremony.date}<br>${content.ceremony.time}`);
     }
     if (ceremonyRows.length >= 2) {
-      ceremonyRows[1].innerHTML = content.ceremony.place;
+      ceremonyRows[1].innerHTML = DOMPurify.sanitize(content.ceremony.place);
     }
   }
 
@@ -74,11 +77,13 @@ export function syncContentToDOM(content: WebsiteContent) {
 
     if (eyebrow) eyebrow.textContent = content.story.eyebrow;
     if (h2) {
-      h2.innerHTML = content.story.heading
-        .split('started...').map((part: string, i: number) => {
-          if (i === 0) return part;
-          return `<span class="script">started...</span>`;
-        }).join('');
+      h2.innerHTML = DOMPurify.sanitize(
+        content.story.heading
+          .split('started...').map((part: string, i: number) => {
+            if (i === 0) return part;
+            return `<span class="script">started...</span>`;
+          }).join('')
+      );
     }
     if (paragraphs.length >= 1) paragraphs[0].textContent = content.story.paragraph1;
     if (paragraphs.length >= 2) paragraphs[1].textContent = content.story.paragraph2;
@@ -91,7 +96,7 @@ export function syncContentToDOM(content: WebsiteContent) {
     const p = faqSection.querySelector('p');
 
     if (h2) {
-      h2.innerHTML = `${content.faq.heading.split('...')[0]}<span class="script">...</span>`;
+      h2.innerHTML = DOMPurify.sanitize(`${content.faq.heading.split('...')[0]}<span class="script">...</span>`);
     }
     if (p) p.textContent = content.faq.paragraph;
   }
@@ -142,11 +147,10 @@ export function syncContentToDOM(content: WebsiteContent) {
 
   const footerBig = document.querySelector('.footer-big');
   const hashtag = document.querySelector('.hashtag');
-  const footerBottom = document.querySelector('.footer-bottom div');
 
   if (footerBig) {
     const headingParts = content.footer.heading.split('soon');
-    footerBig.innerHTML = headingParts[0] + '<span class="script">soon</span>' + (headingParts[1] || '');
+    footerBig.innerHTML = DOMPurify.sanitize(headingParts[0] + '<span class="script">soon</span>' + (headingParts[1] || ''));
   }
   if (hashtag) hashtag.textContent = content.footer.hashtag;
 }
