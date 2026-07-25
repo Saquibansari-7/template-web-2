@@ -551,9 +551,11 @@ button {
   font-weight: 700;
   z-index: 30;
   max-width: 220px;
+  font-family: 'Dancing Script', cursive;
+
 }
 
-.hero-meta.left { left: 5%; text-align: center; }
+.hero-meta.left { left: 5%; text-align: center,; }
 .hero-meta.right { right: 5%; text-align: center; }
 
 .hero-meta .label {
@@ -1514,48 +1516,48 @@ button {
     display: block !important;
   }
   /* Mobile hero meta positioning */
-@media (max-width: 980px) {
-  .hero { min-height: auto !important; padding-top: 18px !important; padding-bottom: 24px !important; position: relative !important; }
+  @media (max-width: 980px) {
+    .hero { min-height: auto !important; padding-top: 18px !important; padding-bottom: 24px !important; position: relative !important; }
 
-  .hero-meta {
-    position: relative !important;
-    bottom: auto !important;
-    width: 44% !important;
-    font-size: 14px !important;
-    background: var(--cream) !important;
-    padding: 14px 18px !important;
-    border-radius: 14px !important;
-    box-shadow: 0 14px 30px rgba(0,0,0,0.12) !important;
-    margin: 0 !important;
-    display: block !important;
-    align-self: flex-start !important;
-  }
+    .hero-meta {
+      position: relative !important;
+      bottom: auto !important;
+      width: 44% !important;
+      font-size: 14px !important;
+      background: var(--cream) !important;
+      padding: 14px 18px !important;
+      border-radius: 14px !important;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12) !important;
+      margin: 0 !important;
+      display: block !important;
+      align-self: flex-start !important;
+    }
 
-  .hero-meta.left {
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    text-align: center !important;
-    margin-top: 24px !important;
-  }
+    .hero-meta.left {
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      text-align: center !important;
+      margin-top: 24px !important;
+    }
 
-  .hero-meta.right {
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    text-align: center !important;
-    align-self: flex-end !important;
-    margin-top: 24px !important;
-  }
+    .hero-meta.right {
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      text-align: center !important;
+      align-self: flex-end !important;
+      margin-top: 24px !important;
+    }
 
-  .hero-meta .label {
-    font-size: 24px !important;
+    .hero-meta .label {
+      font-size: 24px !important;
+    }
   }
-}
 
 
   /* Stack split columns and make images responsive */
- /* Split */
+  /* Split */
   .split { grid-template-columns: 1fr !important; }
   .split-left, .split-right { padding: 18px 12px !important; }
   .split-right .split-img-wrap {
@@ -1604,5 +1606,108 @@ button {
   /* Ensure story text isn't clipped on mobile */
   .story { overflow: visible !important; display: block !important; grid-template-columns: 1fr !important; }
   .story-text { padding-bottom: 100px !important; }
+}
+
+/* ===== MUSIC DISK ===== */
+.music-disk {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  cursor: pointer;
+  z-index: 100001;
+  overflow: hidden;
+  transition: box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.music-disk:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+
+/* Vinyl grooves */
+.music-disk::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    transparent 0px,
+    transparent 2px,
+    rgba(255,255,255,0.04) 2px,
+    rgba(255,255,255,0.04) 3px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Center label */
+.music-disk-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cream), var(--pink));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Spindle hole */
+.music-disk-label::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #111;
+  position: absolute;
+  z-index: 2;
+}
+
+.music-disk-icon {
+  font-size: 14px;
+  color: var(--red);
+  z-index: 3;
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* Spin animation */
+.music-disk.playing {
+  animation: music-spin 2.5s linear infinite;
+}
+
+@keyframes music-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .music-disk {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .music-disk-icon {
+    font-size: 12px;
+  }
+
+  .music-disk-label::after {
+    width: 6px;
+    height: 6px;
+  }
 }
 

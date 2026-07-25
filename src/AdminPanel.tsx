@@ -5,7 +5,7 @@ import { uploadImage } from './services/uploadImage';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const { content, sections, updateContent, updateSection, saveContent: saveContentToSupabase } = useWebsiteContext();
+  const { content, sections, updateContent, updateNestedContent, updateSection, saveContent: saveContentToSupabase } = useWebsiteContext();
   const siteId = new URLSearchParams(window.location.search).get('site') || 'default';
   const [activeTab, setActiveTab] = useState('hero');
   const [imagePreview, setImagePreview] = useState<{ [key: string]: string }>({});
@@ -26,7 +26,12 @@ function AdminPanel() {
         }
 
         setImagePreview((prev) => ({ ...prev, [`${section}-${field}`]: base64 }));
-        updateContent(section as keyof typeof content, field, publicUrl || base64);
+
+        if (field.includes('.')) {
+          updateNestedContent(section as keyof typeof content, field, publicUrl || base64);
+        } else {
+          updateContent(section as keyof typeof content, field, publicUrl || base64);
+        }
       } catch (error) {
         console.error('Error saving image:', error);
         alert('Error saving image. Please try again.');
@@ -314,6 +319,42 @@ function AdminPanel() {
                 <img src={imagePreview['faq-image'] || (content.faq.image.startsWith('data:image') ? content.faq.image : '')} alt="FAQ" className="admin-preview" />
               )}
             </div>
+
+            <div className="admin-field">
+              <label>FAQ Items</label>
+              {(content.faq.items || []).map((item, index) => (
+                <div key={index} className="admin-faq-item">
+                  <input
+                    type="text"
+                    value={item.question}
+                    onChange={(e) => {
+                      const newItems = [...(content.faq.items || [])];
+                      newItems[index] = { ...newItems[index], question: e.target.value };
+                      updateContent('faq', 'items', newItems);
+                    }}
+                    placeholder="Question"
+                  />
+                  <textarea
+                    value={item.answer}
+                    onChange={(e) => {
+                      const newItems = [...(content.faq.items || [])];
+                      newItems[index] = { ...newItems[index], answer: e.target.value };
+                      updateContent('faq', 'items', newItems);
+                    }}
+                    placeholder="Answer"
+                    rows={3}
+                  />
+                  <button className="admin-remove-btn" onClick={() => {
+                    const newItems = (content.faq.items || []).filter((_, i) => i !== index);
+                    updateContent('faq', 'items', newItems);
+                  }}>Remove</button>
+                </div>
+              ))}
+              <button className="admin-add-btn" onClick={() => {
+                const newItems = [...(content.faq.items || []), { question: '', answer: '' }];
+                updateContent('faq', 'items', newItems);
+              }}>Add FAQ Item</button>
+            </div>
           </div>
         )}
 
@@ -344,6 +385,63 @@ function AdminPanel() {
                 onChange={(e) => updateContent('travel', 'paragraph', e.target.value)}
                 rows={3}
               />
+            </div>
+
+            <div className="admin-field">
+              <label>Travel Cards</label>
+              {(content.travel.cards || []).map((card, index) => (
+                <div key={index} className="admin-travel-card">
+                  <input
+                    type="text"
+                    value={card.tag}
+                    onChange={(e) => {
+                      const newCards = [...(content.travel.cards || [])];
+                      newCards[index] = { ...newCards[index], tag: e.target.value };
+                      updateContent('travel', 'cards', newCards);
+                    }}
+                    placeholder="Tag (e.g. getting there)"
+                  />
+                  <input
+                    type="text"
+                    value={card.title}
+                    onChange={(e) => {
+                      const newCards = [...(content.travel.cards || [])];
+                      newCards[index] = { ...newCards[index], title: e.target.value };
+                      updateContent('travel', 'cards', newCards);
+                    }}
+                    placeholder="Title"
+                  />
+                  <textarea
+                    value={card.paragraph}
+                    onChange={(e) => {
+                      const newCards = [...(content.travel.cards || [])];
+                      newCards[index] = { ...newCards[index], paragraph: e.target.value };
+                      updateContent('travel', 'cards', newCards);
+                    }}
+                    placeholder="Paragraph"
+                    rows={3}
+                  />
+                  <div className="admin-field">
+                    <label>Card Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files && handleImageUpload('travel', `cards.${index}.image`, e.target.files[0])}
+                    />
+                    {(imagePreview[`travel-cards.${index}.image`] || (card.image && (card.image.startsWith('data:image') || card.image.startsWith('db:')))) && (
+                      <img src={imagePreview[`travel-cards.${index}.image`] || (card.image.startsWith('data:image') ? card.image : '')} alt={`Travel card ${index + 1}`} className="admin-preview" />
+                    )}
+                  </div>
+                  <button className="admin-remove-btn" onClick={() => {
+                    const newCards = (content.travel.cards || []).filter((_, i) => i !== index);
+                    updateContent('travel', 'cards', newCards);
+                  }}>Remove Card</button>
+                </div>
+              ))}
+              <button className="admin-add-btn" onClick={() => {
+                const newCards = [...(content.travel.cards || []), { tag: '', title: '', paragraph: '', image: '' }];
+                updateContent('travel', 'cards', newCards);
+              }}>Add Travel Card</button>
             </div>
           </div>
         )}
@@ -397,14 +495,6 @@ function AdminPanel() {
                 type="text"
                 value={content.footer.hashtag}
                 onChange={(e) => updateContent('footer', 'hashtag', e.target.value)}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Copyright</label>
-              <input
-                type="text"
-                value={content.footer.copyright}
-                onChange={(e) => updateContent('footer', 'copyright', e.target.value)}
               />
             </div>
           </div>

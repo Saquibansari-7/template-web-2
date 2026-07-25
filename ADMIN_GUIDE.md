@@ -5,7 +5,10 @@
 ### Method 1: Click the Settings Button
 A **⚙️ settings button** appears in the bottom-right corner of the website. Click it to access the admin panel login screen.
 
-### Method 2: Keyboard Shortcut
+### Method 2: Direct URL
+Type `/admin` in the address bar to access the admin panel login screen.
+
+### Method 3: Keyboard Shortcut
 Press `Ctrl+Shift+A` on any page to trigger admin mode.
 
 ## Login Credentials

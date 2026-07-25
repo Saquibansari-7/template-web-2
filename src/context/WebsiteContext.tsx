@@ -13,8 +13,8 @@ export type PartialWebsiteContent = Partial<{
   intro: { eyebrow: string; heading: string; paragraph1: string; paragraph2: string; signature: string; image: string };
   ceremony: { date: string; time: string; place: string };
   story: { eyebrow: string; heading: string; paragraph1: string; paragraph2: string; signature: string; image: string };
-  faq: { heading: string; paragraph: string; image: string };
-  travel: { eyebrow: string; heading: string; paragraph: string };
+  faq: { heading: string; paragraph: string; image: string; items: { question: string; answer: string }[] };
+  travel: { eyebrow: string; heading: string; paragraph: string; cards: { tag: string; title: string; paragraph: string; image: string }[] };
   registry: { eyebrow: string; heading: string; paragraph: string };
   footer: { heading: string; hashtag: string; copyright: string };
   rsvp: { phoneNumber: string; enableWhatsApp: boolean };
@@ -52,11 +52,13 @@ export interface WebsiteContent {
     heading: string;
     paragraph: string;
     image: string;
+    items: { question: string; answer: string }[];
   };
   travel: {
     eyebrow: string;
     heading: string;
     paragraph: string;
+    cards: { tag: string; title: string; paragraph: string; image: string }[];
   };
   registry: {
     eyebrow: string;
@@ -77,7 +79,8 @@ export interface WebsiteContent {
 export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
-  updateContent: (section: keyof WebsiteContent, field: string, value: string | boolean) => void;
+  updateContent: (section: keyof WebsiteContent, field: string, value: any) => void;
+  updateNestedContent: (section: keyof WebsiteContent, path: string, value: any) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
   saveContent: (siteId: string) => Promise<void>;
 }
@@ -107,18 +110,33 @@ const defaultContent: WebsiteContent = {
     heading: 'How it started...',
     paragraph1: 'She ordered an oat-milk latte. He spilled his. What followed was a two-hour conversation about terrible movies, better books, and why neither of us could stand the smell of eucalyptus candles.',
     paragraph2: 'One apartment, two coastal moves, and a stubborn rescue dog named Pablo later — we still argue about the candles.',
-    signature: 'Emma & Jordan, est. 2032',
+    signature: 'Emma & Jordan, est. 2026',
     image: 'public/images/story.jpg',
   },
   faq: {
     heading: "You've Got Questions...",
     paragraph: "Dress code? Dogs allowed? Where to stay? Is there a late-night taco bar? (Yes.) We've answered all the big ones — and the weird ones — so you can show up ready to celebrate.",
     image: 'public/images/couple-3.jpg',
+    items: [
+      { question: 'What should I wear?', answer: 'Dress code is cocktail attire — think dressy but comfortable. We\'re going for elevated casual. No jeans, but you know what looks good on you. Wear colors! The venue is beautiful but we want you to feel like you.' },
+      { question: 'Are dogs allowed?', answer: 'Yes! If you have a furry friend, we\'d love to have them celebrate with us (space permitting). Just let us know in your RSVP so we can plan accordingly and make sure they\'re comfortable.' },
+      { question: 'Where should I stay?', answer: 'San Francisco has tons of options. We\'re recommending the SOMA and Mission Bay areas — both are 15-20 minutes from the venue. The Four Seasons is beautiful if you\'re splurging, or try the Pod Hotel for something more budget-friendly.' },
+      { question: 'Is there a late-night taco bar?', answer: 'Yes! There absolutely is. After the main reception, we\'re heading to a secret late-night taco spot that\'s only open for our guests. Bring your appetite and your dancing shoes. More details in your welcome packet.' },
+      { question: 'Can I bring a plus one?', answer: 'Your invitation will specify. If there\'s a plus-one line on your card, you\'re golden. If not, we\'d love to celebrate with you solo (or with your family if they\'re invited).' },
+      { question: 'What time should I arrive?', answer: 'Doors open at 4:00 PM for cocktails. Ceremony starts at 5:00 PM sharp. We\'d love to see you early to settle in, have a drink, and soak in the vibe.' },
+      { question: 'Is there parking?', answer: 'Yes! Valet parking is complimentary for all guests. Just pull up to the entrance and our team will take care of it.' },
+      { question: 'What about dietary restrictions?', answer: 'Let us know on your RSVP! We\'re accommodating vegetarian, vegan, gluten-free, and allergy-friendly meals. Just be specific so our caterer can do it right.' },
+    ],
   },
   travel: {
     eyebrow: 'travel & stay',
     heading: 'Come for the vows, stay for the city.',
     paragraph: "A loose guide to where we'd crash, eat, and wander if we had the weekend to do it over.",
+    cards: [
+      { tag: 'getting there', title: 'Fly into SFO or OAK', paragraph: 'SFO is a 20-min ride to the venue. OAK is 25. Both have reliable rideshare — Caltrain works too if you\'re feeling scenic.', image: 'public/images/travel-1.jpg' },
+      { tag: 'where to stay', title: 'The Proper & The Battery', paragraph: 'Use code EMMA&JORDAN at checkout for the group rate. Both are under a mile from the Foundry.', image: 'public/images/travel-2.jpg' },
+      { tag: 'eat & wander', title: 'Our favorite spots', paragraph: 'Tartine for the morning after. Zuni Cafe for Friday lunch. Lands End if your legs are up for a walk.', image: 'public/images/travel-3.jpg' },
+    ],
   },
   registry: {
     eyebrow: 'the registry',
@@ -206,13 +224,28 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     }
   }, []);
 
-  const updateContent = (section: keyof WebsiteContent, field: string, value: string | boolean) => {
+  const setNestedValue = (obj: any, path: string, value: any) => {
+    const keys = path.split('.');
+    const lastKey = keys.pop()!;
+    const target = keys.reduce((acc, key) => acc[key], obj);
+    target[lastKey] = value;
+    return { ...obj };
+  };
+
+  const updateContent = (section: keyof WebsiteContent, field: string, value: any) => {
     setContent((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
         [field]: value,
       } as WebsiteContent[typeof section],
+    }));
+  };
+
+  const updateNestedContent = (section: keyof WebsiteContent, path: string, value: any) => {
+    setContent((prev) => ({
+      ...prev,
+      [section]: setNestedValue({ ...prev[section] }, path, value) as WebsiteContent[typeof section],
     }));
   };
 
@@ -251,6 +284,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
         content,
         sections,
         updateContent,
+        updateNestedContent,
         updateSection,
         saveContent: saveContentToSupabase,
       }}

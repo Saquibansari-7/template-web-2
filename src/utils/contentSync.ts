@@ -112,6 +112,23 @@ export function syncContentToDOM(content: WebsiteContent) {
     if (p) p.textContent = content.travel.paragraph;
   }
 
+  const travelCards = document.querySelectorAll('.travel-card');
+  if (content.travel.cards && travelCards.length >= content.travel.cards.length) {
+    content.travel.cards.forEach((card, index) => {
+      const cardEl = travelCards[index];
+      if (!cardEl) return;
+      const tag = cardEl.querySelector('.tag');
+      const h3 = cardEl.querySelector('h3');
+      const p = cardEl.querySelector('p');
+      const img = cardEl.querySelector('img') as HTMLImageElement;
+
+      if (tag) tag.textContent = card.tag;
+      if (h3) h3.textContent = card.title;
+      if (p) p.textContent = card.paragraph;
+      if (img && card.image) img.src = card.image;
+    });
+  }
+
   const registryText = document.querySelector('.registry-text');
   if (registryText) {
     const eyebrow = registryText.querySelector('.eyebrow');

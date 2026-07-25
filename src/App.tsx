@@ -4,13 +4,15 @@ import AdminPanel from './AdminPanel'
 import AdminLogin from './AdminLogin'
 import { loadContent } from './services/loadContent'
 import { syncContentToDOM } from './utils/contentSync'
+import { useWebsiteContext } from './context/WebsiteContext'
 import './App.css'
 
 function App() {
+  const { content } = useWebsiteContext();
   const [isFAQOpen, setIsFAQOpen] = useState(false)
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
 
-  const openAdmin = new URLSearchParams(window.location.search).has('admin')
+  const openAdmin = window.location.pathname === '/admin' || window.location.pathname.endsWith('/admin')
   const showAdminModal = useMemo(() => openAdmin, [openAdmin])
 
   useEffect(() => {
@@ -59,7 +61,7 @@ function App() {
 
   return (
     <>
-      <FAQModal isOpen={isFAQOpen} onClose={() => setIsFAQOpen(false)} />
+      <FAQModal isOpen={isFAQOpen} onClose={() => setIsFAQOpen(false)} items={content.faq.items || []} />
 
       {/* Admin Panel - Show if authenticated */}
       {isAdminAuthenticated && <AdminPanel />}

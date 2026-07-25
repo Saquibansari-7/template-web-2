@@ -12,7 +12,7 @@ function AdminLogin({ onLogin }: AdminLoginProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simple password check (in production, use proper authentication)
-    if (password === 'admin2026') {
+    if (password === 'demo@222') {
       localStorage.setItem('adminAuthenticated', 'true');
       onLogin();
     } else {
@@ -42,7 +42,6 @@ function AdminLogin({ onLogin }: AdminLoginProps) {
             Login
           </button>
         </form>
-        <p className="admin-login-hint">Password: admin2026</p>
       </div>
     </div>
   );
