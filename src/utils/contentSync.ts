@@ -77,8 +77,9 @@ export function syncContentToDOM(content: WebsiteContent) {
 
     if (eyebrow) eyebrow.textContent = content.story.eyebrow;
     if (h2) {
+      const headingText = content.story.heading || '';
       h2.innerHTML = DOMPurify.sanitize(
-        content.story.heading
+        headingText
           .split('started...').map((part: string, i: number) => {
             if (i === 0) return part;
             return `<span class="script">started...</span>`;
@@ -96,7 +97,8 @@ export function syncContentToDOM(content: WebsiteContent) {
     const p = faqSection.querySelector('p');
 
     if (h2) {
-      h2.innerHTML = DOMPurify.sanitize(`${content.faq.heading.split('...')[0]}<span class="script">...</span>`);
+      const faqHeading = content.faq.heading || '';
+      h2.innerHTML = DOMPurify.sanitize(`${faqHeading.split('...')[0]}<span class="script">...</span>`);
     }
     if (p) p.textContent = content.faq.paragraph;
   }
@@ -149,7 +151,8 @@ export function syncContentToDOM(content: WebsiteContent) {
   const hashtag = document.querySelector('.hashtag');
 
   if (footerBig) {
-    const headingParts = content.footer.heading.split('soon');
+    const footerHeading = content.footer.heading || '';
+    const headingParts = footerHeading.split('soon');
     footerBig.innerHTML = DOMPurify.sanitize(headingParts[0] + '<span class="script">soon</span>' + (headingParts[1] || ''));
   }
   if (hashtag) hashtag.textContent = content.footer.hashtag;

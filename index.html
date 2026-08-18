@@ -466,7 +466,15 @@
       const panelRight = document.getElementById('panelRight');
       const STRIPS_PER_PANEL = 22;
       let opened = false;
-      document.body.style.overflow = 'hidden';
+
+      if (window.location.pathname === '/admin' || window.location.pathname.endsWith('/admin')) {
+        if (overlay) overlay.style.display = 'none';
+        const musicDisk = document.getElementById('musicDisk');
+        if (musicDisk) musicDisk.style.display = 'none';
+        document.body.style.overflow = '';
+      } else {
+        document.body.style.overflow = 'hidden';
+      }
 
       function foldGradient(jitter){
         const hi = 36 + jitter;
