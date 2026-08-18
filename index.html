@@ -535,28 +535,41 @@
         gsap.to(overlay, { opacity: 0, duration: 1, delay: 1.6, ease: 'power2.inOut', onComplete: () => { overlay.style.display = 'none'; } });
       }
 
-      const audio = new Audio('/images/Christina Perri - wedding.mp3');
+      const audio = new Audio('/images/wedding.mp3');
       audio.loop = true;
       audio.volume = 0.5;
+      audio.preload = 'auto';
       let musicPlaying = false;
       const musicDisk = document.getElementById('musicDisk');
 
+      audio.load();
+
       function startMusic(){
-        if(musicPlaying) return;
-        audio.play().catch(()=>{});
-        musicDisk.classList.add('playing');
-        musicPlaying = true;
+        if(musicPlaying) return Promise.resolve();
+        return audio.play().then(() => {
+          musicDisk.classList.add('playing');
+          musicPlaying = true;
+        }).catch(err => {
+          console.warn('Autoplay blocked, will retry on next interaction:', err);
+          audio.addEventListener('canplaythrough', function onReady() {
+            audio.removeEventListener('canplaythrough', onReady);
+            audio.play().then(() => {
+              musicDisk.classList.add('playing');
+              musicPlaying = true;
+            }).catch(e => console.warn('Retry play failed:', e));
+          }, { once: true });
+          audio.load();
+        });
       }
 
       function toggleMusic(){
         if(musicPlaying){
           audio.pause();
           musicDisk.classList.remove('playing');
+          musicPlaying = false;
         } else {
-          audio.play().catch(()=>{});
-          musicDisk.classList.add('playing');
+          startMusic();
         }
-        musicPlaying = !musicPlaying;
       }
 
       if(musicDisk){
