@@ -5,10 +5,18 @@ import { uploadImage } from './services/uploadImage';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const { content, sections, updateContent, updateNestedContent, updateSection, saveContent: saveContentToSupabase } = useWebsiteContext();
-  const siteId = new URLSearchParams(window.location.search).get('site') || 'default';
+  const { content, sections, updateContent, updateNestedContent, updateSection, saveContent: saveContentToSupabase, saveContentToSite, site } = useWebsiteContext();
+  const customer = new URLSearchParams(window.location.search).get('customer');
+  const effectiveSiteId = customer || new URLSearchParams(window.location.search).get('site') || 'default';
   const [activeTab, setActiveTab] = useState('hero');
   const [imagePreview, setImagePreview] = useState<{ [key: string]: string }>({});
+
+  const viewSiteHref = (() => {
+    if (typeof window === 'undefined') return '/';
+    const params = new URLSearchParams(window.location.search);
+    const cust = params.get('customer');
+    return cust ? '/?customer=' + encodeURIComponent(cust) : '/';
+  })();
 
   const handleImageUpload = async (section: string, field: string, file: File) => {
     const reader = new FileReader();
@@ -17,9 +25,9 @@ function AdminPanel() {
 
       try {
         let publicUrl = '';
-        if (siteId) {
+        if (effectiveSiteId) {
           try {
-            publicUrl = await uploadImage(siteId, file);
+            publicUrl = await uploadImage(effectiveSiteId, file);
           } catch (err) {
             console.error('Supabase image upload failed:', err);
           }
@@ -42,7 +50,11 @@ function AdminPanel() {
 
   const handleSave = async () => {
     try {
-      await saveContentToSupabase(siteId);
+      if (site) {
+        await saveContentToSite(site.id, content);
+      } else {
+        await saveContentToSupabase(effectiveSiteId);
+      }
       syncContentToDOM(content);
       alert('Changes saved and applied to the website!');
     } catch (error) {
@@ -55,6 +67,7 @@ function AdminPanel() {
     <div className="admin-panel">
       <div className="admin-header">
         <h1>Website Admin Panel</h1>
+        <a href={viewSiteHref} target="_blank" rel="noopener noreferrer" className="admin-view-site-btn">View Site →</a>
         <button className="admin-exit-btn" onClick={() => {
           localStorage.removeItem('adminAuthenticated');
           window.location.reload();

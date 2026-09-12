@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { loadContent } from '../services/loadContent';
+import { loadContent, loadContentByCustomer } from '../services/loadContent';
 import { supabase } from '../lib/supabase';
+import { SiteRow } from '../lib/siteResolver';
 
 export interface SectionSettings {
   [key: string]: {
@@ -79,10 +80,12 @@ export interface WebsiteContent {
 export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
+  site: SiteRow | null;
   updateContent: (section: keyof WebsiteContent, field: string, value: unknown) => void;
   updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
   saveContent: (siteId: string) => Promise<void>;
+  saveContentToSite: (siteId: string, content: WebsiteContent) => Promise<void>;
 }
 
 const defaultContent: WebsiteContent = {
@@ -165,7 +168,7 @@ const defaultSections: SectionSettings = {
   footer: { visible: true },
 };
 
-const defaultSiteId = 'default';
+const defaultSiteId = 'emma-jordan';
 
 const isSupabaseConfigured = () => {
   return !!supabase && typeof supabase.from === 'function';
@@ -198,29 +201,46 @@ interface WebsiteProviderProps {
 export function WebsiteProvider({ children }: WebsiteProviderProps) {
   const [content, setContent] = useState<WebsiteContent>(defaultContent);
   const [sections, setSections] = useState<SectionSettings>(defaultSections);
+  const [site, setSite] = useState<SiteRow | null>(null);
 
   useEffect(() => {
-    const siteId = getStoredSiteId();
-    
-    if (isSupabaseConfigured()) {
-      loadContent(siteId)
-        .then((data) => {
-          if (data) {
-            const mergedData = data as PartialWebsiteContent;
-            setContent(prev => ({
-              ...prev,
-              ...mergedData,
-              rsvp: {
-                ...prev.rsvp,
-                ...(mergedData.rsvp || {}),
-              },
-            }));
-            storeSiteId(siteId);
+    const params = new URLSearchParams(window.location.search);
+    const customer = params.get('customer');
+
+    const loadAndSet = (data: PartialWebsiteContent | null) => {
+      if (data) {
+        setContent(prev => ({
+          ...prev,
+          ...data,
+          rsvp: {
+            ...prev.rsvp,
+            ...(data.rsvp || {}),
+          },
+        }));
+      }
+    };
+
+    if (customer && customer.trim()) {
+      loadContentByCustomer(customer.trim(), defaultContent as unknown as Record<string, unknown>)
+        .then((result) => {
+          if (result) {
+            setContent(result.content as WebsiteContent);
+            setSite(result.site);
+            storeSiteId(customer.trim());
+          } else {
+            console.warn('[App] customer not found, using default site');
+            const siteId = getStoredSiteId();
+            loadContent(siteId).then(loadAndSet);
           }
         })
-        .catch(() => {
-          // Silently fail — defaults will be used
+        .catch((err) => {
+          console.error('[App] customer load failed:', err);
+          const siteId = getStoredSiteId();
+          loadContent(siteId).then(loadAndSet);
         });
+    } else {
+      const siteId = getStoredSiteId();
+      loadContent(siteId).then(loadAndSet);
     }
   }, []);
 
@@ -277,15 +297,48 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     }
   };
 
+  const saveContentToSite = async (siteId: string, payload: WebsiteContent) => {
+    const supabaseUrl = (import.meta.env.VITE_PUBLIC_SUPABASE_URL || '').trim();
+    const supabaseKey = (import.meta.env.VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').trim();
+    if (!supabaseUrl || !supabaseKey) return;
+
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/sites?id=eq.${encodeURIComponent(siteId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          data: {
+            ...payload,
+            sections,
+          },
+          updated_at: new Date().toISOString(),
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`[saveContentToSite] HTTP ${res.status}: ${text}`);
+    }
+  };
+
   return (
     <WebsiteContext.Provider
       value={{
         content,
         sections,
+        site,
         updateContent,
         updateNestedContent,
         updateSection,
         saveContent: saveContentToSupabase,
+        saveContentToSite,
       }}
     >
       {children}
