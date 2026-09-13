@@ -177,7 +177,8 @@ const isSupabaseConfigured = () => {
 const getStoredSiteId = (): string => {
   try {
     const stored = localStorage.getItem('weddingSiteId');
-    return stored || defaultSiteId;
+    if (stored && stored !== 'default') return stored;
+    return defaultSiteId;
   } catch {
     return defaultSiteId;
   }
@@ -224,7 +225,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       loadContentByCustomer(customer.trim(), defaultContent as unknown as Record<string, unknown>)
         .then((result) => {
           if (result) {
-            setContent(result.content as WebsiteContent);
+            setContent(result.content as unknown as WebsiteContent);
             setSite(result.site);
             storeSiteId(customer.trim());
           } else {

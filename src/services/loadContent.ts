@@ -4,13 +4,23 @@ export async function loadContent(siteId: string) {
   if (!supabase || typeof supabase.from !== "function") {
     return null;
   }
-  const { data } = await supabase
-    .from("site_content")
-    .select("data")
-    .eq("site_id", siteId)
-    .single();
 
-  return data?.data;
+  try {
+    const { data, error } = await supabase
+      .from("site_content")
+      .select("data")
+      .eq("site_id", siteId)
+      .single();
+
+    if (error) {
+      console.warn('[loadContent] supabase error for', siteId, error.message);
+      return null;
+    }
+    return data?.data;
+  } catch (err) {
+    console.warn('[loadContent] fetch failed for', siteId, err);
+    return null;
+  }
 }
 
 export function mergeDeep(

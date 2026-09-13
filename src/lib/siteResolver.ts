@@ -33,7 +33,7 @@ export async function resolveSite(
     );
 
     if (!res.ok) {
-      console.error('[siteResolver] HTTP', res.status, await res.text().catch(() => ''));
+      console.warn('[siteResolver] HTTP', res.status, 'for', subdomain);
       return null;
     }
 
@@ -41,7 +41,7 @@ export async function resolveSite(
     console.log('[siteResolver] rows returned:', rows.length, 'for', subdomain);
     return rows[0] ?? null;
   } catch (err) {
-    console.error('[siteResolver] fetch failed:', err);
+    console.warn('[siteResolver] fetch failed for', subdomain, err);
     return null;
   }
 }

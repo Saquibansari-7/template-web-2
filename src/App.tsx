@@ -41,7 +41,7 @@ function App() {
           console.error('[App] customer load failed:', err);
         }
       } else {
-        const siteId = new URLSearchParams(window.location.search).get('site') || 'default'
+        const siteId = new URLSearchParams(window.location.search).get('site') || 'emma-jordan'
         try {
           const data = await loadContent(siteId);
           if (data) {

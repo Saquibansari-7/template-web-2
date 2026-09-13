@@ -7,7 +7,7 @@ import './AdminPanel.css';
 function AdminPanel() {
   const { content, sections, updateContent, updateNestedContent, updateSection, saveContent: saveContentToSupabase, saveContentToSite, site } = useWebsiteContext();
   const customer = new URLSearchParams(window.location.search).get('customer');
-  const effectiveSiteId = customer || new URLSearchParams(window.location.search).get('site') || 'default';
+  const effectiveSiteId = customer || new URLSearchParams(window.location.search).get('site') || 'emma-jordan';
   const [activeTab, setActiveTab] = useState('hero');
   const [imagePreview, setImagePreview] = useState<{ [key: string]: string }>({});
 
