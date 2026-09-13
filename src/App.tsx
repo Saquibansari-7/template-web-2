@@ -5,14 +5,21 @@ import AdminLogin from './AdminLogin'
 import { loadContent, loadContentByCustomer } from './services/loadContent'
 import { syncContentToDOM } from './utils/contentSync'
 import { useWebsiteContext } from './context/WebsiteContext'
+import { WebsiteContent } from './context/WebsiteContext'
 import './App.css'
+
+declare global {
+  interface Window {
+    openFAQModal?: () => void
+  }
+}
 
 function App() {
   const { content } = useWebsiteContext();
   const [isFAQOpen, setIsFAQOpen] = useState(false)
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
   const hasLoadedRef = useRef(false);
-  const defaultContentRef = useRef(content);
+  const defaultContentRef = useRef<WebsiteContent>(content as WebsiteContent);
 
   const openAdmin = window.location.pathname === '/admin' || window.location.pathname.endsWith('/admin')
   const showAdminModal = useMemo(() => openAdmin, [openAdmin])
@@ -35,7 +42,7 @@ function App() {
         try {
           const result = await loadContentByCustomer(customer.trim(), defaultContentRef.current as unknown as Record<string, unknown>);
           if (result) {
-            syncContentToDOM(result.content as Parameters<typeof syncContentToDOM>[0]);
+            syncContentToDOM(result.content as unknown as WebsiteContent);
           }
         } catch (err) {
           console.error('[App] customer load failed:', err);
@@ -45,7 +52,7 @@ function App() {
         try {
           const data = await loadContent(siteId);
           if (data) {
-            syncContentToDOM(data);
+            syncContentToDOM(data as unknown as WebsiteContent);
           }
         } catch (err) {
           console.error('[App] loadContent failed:', err);
