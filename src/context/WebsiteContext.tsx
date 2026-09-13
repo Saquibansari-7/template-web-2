@@ -93,7 +93,7 @@ const defaultContent: WebsiteContent = {
     title: "WE'RE TYING THE KNOT!",
     date: "Friday, October 26, 2026 · 5:00 PM",
     place: "Safdie Foundry, San Francisco, CA",
-    image: 'public/images/couple-hero.jpg',
+    image: '/images/couple-hero.jpg',
   },
   intro: {
     eyebrow: 'a little note',
@@ -101,7 +101,7 @@ const defaultContent: WebsiteContent = {
     paragraph1: 'We met on a rainy Tuesday in a tiny bookshop in the Mission. He was looking for a Murakami. She was pretending to be. Three years later — here we are.',
     paragraph2: "We can't wait to celebrate with the people we love most. You.",
     signature: '— Emma & Jordan',
-    image: 'public/images/couple-2.jpg',
+    image: '/images/couple-2.jpg',
   },
   ceremony: {
     date: 'October 26, 2026',
@@ -114,12 +114,12 @@ const defaultContent: WebsiteContent = {
     paragraph1: 'She ordered an oat-milk latte. He spilled his. What followed was a two-hour conversation about terrible movies, better books, and why neither of us could stand the smell of eucalyptus candles.',
     paragraph2: 'One apartment, two coastal moves, and a stubborn rescue dog named Pablo later — we still argue about the candles.',
     signature: 'Emma & Jordan, est. 2026',
-    image: 'public/images/story.jpg',
+    image: '/images/story.jpg',
   },
   faq: {
     heading: "You've Got Questions...",
     paragraph: "Dress code? Dogs allowed? Where to stay? Is there a late-night taco bar? (Yes.) We've answered all the big ones — and the weird ones — so you can show up ready to celebrate.",
-    image: 'public/images/couple-3.jpg',
+    image: '/images/couple-3.jpg',
     items: [
       { question: 'What should I wear?', answer: 'Dress code is cocktail attire — think dressy but comfortable. We\'re going for elevated casual. No jeans, but you know what looks good on you. Wear colors! The venue is beautiful but we want you to feel like you.' },
       { question: 'Are dogs allowed?', answer: 'Yes! If you have a furry friend, we\'d love to have them celebrate with us (space permitting). Just let us know in your RSVP so we can plan accordingly and make sure they\'re comfortable.' },
@@ -136,9 +136,9 @@ const defaultContent: WebsiteContent = {
     heading: 'Come for the vows, stay for the city.',
     paragraph: "A loose guide to where we'd crash, eat, and wander if we had the weekend to do it over.",
     cards: [
-      { tag: 'getting there', title: 'Fly into SFO or OAK', paragraph: 'SFO is a 20-min ride to the venue. OAK is 25. Both have reliable rideshare — Caltrain works too if you\'re feeling scenic.', image: 'public/images/travel-1.jpg' },
-      { tag: 'where to stay', title: 'The Proper & The Battery', paragraph: 'Use code EMMA&JORDAN at checkout for the group rate. Both are under a mile from the Foundry.', image: 'public/images/travel-2.jpg' },
-      { tag: 'eat & wander', title: 'Our favorite spots', paragraph: 'Tartine for the morning after. Zuni Cafe for Friday lunch. Lands End if your legs are up for a walk.', image: 'public/images/travel-3.jpg' },
+      { tag: 'getting there', title: 'Fly into SFO or OAK', paragraph: 'SFO is a 20-min ride to the venue. OAK is 25. Both have reliable rideshare — Caltrain works too if you\'re feeling scenic.', image: '/images/travel-1.jpg' },
+      { tag: 'where to stay', title: 'The Proper & The Battery', paragraph: 'Use code EMMA&JORDAN at checkout for the group rate. Both are under a mile from the Foundry.', image: '/images/travel-2.jpg' },
+      { tag: 'eat & wander', title: 'Our favorite spots', paragraph: 'Tartine for the morning after. Zuni Cafe for Friday lunch. Lands End if your legs are up for a walk.', image: '/images/travel-3.jpg' },
     ],
   },
   registry: {
@@ -208,14 +208,31 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     const params = new URLSearchParams(window.location.search);
     const customer = params.get('customer');
 
+    const normalizePaths = (obj: unknown): unknown => {
+      if (typeof obj !== 'object' || obj === null) return obj;
+      if (Array.isArray(obj)) return obj.map(normalizePaths);
+      const result: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string' && value.startsWith('public/images/')) {
+          result[key] = '/images/' + value.slice('public/images/'.length);
+        } else if (typeof value === 'object' && value !== null) {
+          result[key] = normalizePaths(value);
+        } else {
+          result[key] = value;
+        }
+      }
+      return result;
+    };
+
     const loadAndSet = (data: PartialWebsiteContent | null) => {
       if (data) {
+        const normalized = normalizePaths(data as unknown as Record<string, unknown>) as PartialWebsiteContent;
         setContent(prev => ({
           ...prev,
-          ...data,
+          ...normalized,
           rsvp: {
             ...prev.rsvp,
-            ...(data.rsvp || {}),
+            ...(normalized.rsvp || {}),
           },
         }));
       }
