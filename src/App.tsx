@@ -25,6 +25,39 @@ function App() {
   const showAdminModal = useMemo(() => openAdmin, [openAdmin])
 
   useEffect(() => {
+    if (!openAdmin) return;
+    if (isAdminAuthenticated) return;
+
+    const customer = new URLSearchParams(window.location.search).get('customer')?.toLowerCase().trim();
+    const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
+    const EXPECTED_TEMPLATE_ID = 'editorial';
+
+    if (!customer || !SUBDOMAIN_REGEX.test(customer)) {
+      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
+      return;
+    }
+
+    const validate = async () => {
+      try {
+        const res = await fetch(`https://weddappvows.vercel.app/api/site/lookup?customer=${encodeURIComponent(customer)}`);
+        if (!res.ok) {
+          window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_not_found';
+          return;
+        }
+        const site = await res.json();
+        if (site.template_id !== EXPECTED_TEMPLATE_ID) {
+          window.location.href = 'https://weddappvows.vercel.app/dashboard?error=wrong_template';
+          return;
+        }
+      } catch {
+        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=validation_failed';
+      }
+    };
+
+    validate();
+  }, [openAdmin, isAdminAuthenticated]);
+
+  useEffect(() => {
     if (!openAdmin) {
       localStorage.removeItem('adminAuthenticated')
     }

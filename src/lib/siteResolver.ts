@@ -5,41 +5,38 @@ export interface SiteRow {
   [key: string]: unknown;
 }
 
+const MAIN_APP_URL = 'https://weddappvows.vercel.app';
+const EXPECTED_TEMPLATE_ID = 'editorial';
+const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
+
 export async function resolveSite(
   customerSubdomain: string,
-  supabaseUrl: string,
-  supabaseKey: string,
 ): Promise<SiteRow | null> {
-  let subdomain = (customerSubdomain || '').trim().toLowerCase();
-  if (!subdomain) return null;
-
-  subdomain = subdomain.replace(/\/+$/, '');
-
-  const url = supabaseUrl.trim();
-  const key = supabaseKey.trim();
-  if (!url || !key) return null;
-
-  const safe = subdomain.replace(/[^a-zA-Z0-9_-]/g, '');
-  if (safe !== subdomain) {
-    console.warn('[siteResolver] stripped invalid chars from subdomain:', subdomain, '→', safe);
-    subdomain = safe;
+  const subdomain = (customerSubdomain || '').trim().toLowerCase();
+  if (!subdomain || !SUBDOMAIN_REGEX.test(subdomain)) {
+    return null;
   }
-  if (!subdomain) return null;
 
   try {
     const res = await fetch(
-      `${url}/rest/v1/sites?subdomain=eq.${encodeURIComponent(subdomain)}&select=*&limit=1`,
-      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+      `${MAIN_APP_URL}/api/site/lookup?customer=${encodeURIComponent(subdomain)}`,
     );
 
     if (!res.ok) {
-      console.warn('[siteResolver] HTTP', res.status, 'for', subdomain);
       return null;
     }
 
-    const rows = (await res.json()) as SiteRow[];
-    console.log('[siteResolver] rows returned:', rows.length, 'for', subdomain);
-    return rows[0] ?? null;
+    const site = (await res.json()) as SiteRow & { template_id?: string; status?: string };
+
+    if (site.template_id !== EXPECTED_TEMPLATE_ID) {
+      return null;
+    }
+
+    if (site.status !== 'active') {
+      return null;
+    }
+
+    return site;
   } catch (err) {
     console.warn('[siteResolver] fetch failed for', subdomain, err);
     return null;
