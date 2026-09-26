@@ -242,19 +242,16 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       loadContentByCustomer(customer.trim(), defaultContent as unknown as Record<string, unknown>)
         .then((result) => {
           if (result) {
-            setContent(result.content as unknown as WebsiteContent);
+            const normalized = normalizePaths(result.content as unknown as Record<string, unknown>) as WebsiteContent;
+            setContent(normalized);
             setSite(result.site);
             storeSiteId(customer.trim());
           } else {
-            console.warn('[App] customer not found, using default site');
-            const siteId = getStoredSiteId();
-            loadContent(siteId).then(loadAndSet);
+            console.warn('[App] customer not found, using defaults');
           }
         })
         .catch((err) => {
           console.error('[App] customer load failed:', err);
-          const siteId = getStoredSiteId();
-          loadContent(siteId).then(loadAndSet);
         });
     } else {
       const siteId = getStoredSiteId();
