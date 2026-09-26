@@ -81,6 +81,7 @@ export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
   site: SiteRow | null;
+  loading: boolean;
   updateContent: (section: keyof WebsiteContent, field: string, value: unknown) => void;
   updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
@@ -203,6 +204,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
   const [content, setContent] = useState<WebsiteContent>(defaultContent);
   const [sections, setSections] = useState<SectionSettings>(defaultSections);
   const [site, setSite] = useState<SiteRow | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -238,25 +240,43 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       }
     };
 
-    if (customer && customer.trim()) {
-      loadContentByCustomer(customer.trim(), defaultContent as unknown as Record<string, unknown>)
-        .then((result) => {
-          if (result) {
-            const normalized = normalizePaths(result.content as unknown as Record<string, unknown>) as WebsiteContent;
-            setContent(normalized);
-            setSite(result.site);
-            storeSiteId(customer.trim());
-          } else {
-            console.warn('[App] customer not found, using defaults');
+    let cancelled = false;
+
+    async function init() {
+      if (customer && customer.trim()) {
+        try {
+          const result = await loadContentByCustomer(customer.trim(), defaultContent as unknown as Record<string, unknown>);
+          if (!cancelled) {
+            if (result) {
+              const normalized = normalizePaths(result.content as unknown as Record<string, unknown>) as WebsiteContent;
+              setContent(normalized);
+              setSite(result.site);
+              storeSiteId(customer.trim());
+            }
           }
-        })
-        .catch((err) => {
-          console.error('[App] customer load failed:', err);
-        });
-    } else {
-      const siteId = getStoredSiteId();
-      loadContent(siteId).then(loadAndSet);
+        } catch (err) {
+          if (!cancelled) {
+            console.error('[App] customer load failed:', err);
+          }
+        } finally {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        }
+      } else {
+        const siteId = getStoredSiteId();
+        await loadContent(siteId).then(loadAndSet);
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
+
+    init();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const setNestedValue = (obj: Record<string, unknown>, path: string, value: unknown): Record<string, unknown> => {
@@ -349,6 +369,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
         content,
         sections,
         site,
+        loading,
         updateContent,
         updateNestedContent,
         updateSection,

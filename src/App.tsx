@@ -15,11 +15,14 @@ declare global {
 }
 
 function App() {
-  const { content } = useWebsiteContext();
+  const { content, site, loading } = useWebsiteContext();
   const [isFAQOpen, setIsFAQOpen] = useState(false)
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
   const hasLoadedRef = useRef(false);
   const defaultContentRef = useRef<WebsiteContent>(content as WebsiteContent);
+
+  const customer = new URLSearchParams(window.location.search).get('customer');
+  const showNotFound = !loading && customer && customer.trim() && !site;
 
   const openAdmin = window.location.pathname === '/admin' || window.location.pathname.endsWith('/admin')
   const showAdminModal = useMemo(() => openAdmin, [openAdmin])
@@ -28,25 +31,29 @@ function App() {
     if (!openAdmin) return;
     if (isAdminAuthenticated) return;
 
-    const customer = new URLSearchParams(window.location.search).get('customer')?.toLowerCase().trim();
+    const customerParam = new URLSearchParams(window.location.search).get('customer')?.toLowerCase().trim();
     const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
     const EXPECTED_TEMPLATE_ID = 'editorial';
 
-    if (!customer || !SUBDOMAIN_REGEX.test(customer)) {
+    if (!customerParam || !SUBDOMAIN_REGEX.test(customerParam)) {
       window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
       return;
     }
 
     const validate = async () => {
       try {
-        const res = await fetch(`https://weddappvows.vercel.app/api/site/lookup?customer=${encodeURIComponent(customer)}`);
+        const res = await fetch(`https://weddappvows.vercel.app/api/site/lookup?customer=${encodeURIComponent(customerParam)}`);
         if (!res.ok) {
           window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_not_found';
           return;
         }
-        const site = await res.json();
-        if (site.template_id !== EXPECTED_TEMPLATE_ID) {
+        const siteData = await res.json();
+        if (siteData.template_id !== EXPECTED_TEMPLATE_ID) {
           window.location.href = 'https://weddappvows.vercel.app/dashboard?error=wrong_template';
+          return;
+        }
+        if (siteData.status !== 'active') {
+          window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_inactive';
           return;
         }
       } catch {
@@ -68,12 +75,12 @@ function App() {
     hasLoadedRef.current = true;
 
     const params = new URLSearchParams(window.location.search);
-    const customer = params.get('customer');
+    const customerParam = params.get('customer');
 
     const loadAndSync = async () => {
-      if (customer && customer.trim()) {
+      if (customerParam && customerParam.trim()) {
         try {
-          const result = await loadContentByCustomer(customer.trim(), defaultContentRef.current as unknown as Record<string, unknown>);
+          const result = await loadContentByCustomer(customerParam.trim(), defaultContentRef.current as unknown as Record<string, unknown>);
           if (result) {
             syncContentToDOM(result.content as unknown as WebsiteContent);
           }
@@ -121,6 +128,18 @@ function App() {
       clearTimeout(timeoutId)
     }
   }, [openAdmin])
+
+  if (showNotFound) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#EAD1D6', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ textAlign: 'center', color: '#C21F0C' }}>
+          <h1 style={{ fontSize: '80px', fontFamily: "'DM Serif Display', serif", margin: 0 }}>404</h1>
+          <p style={{ fontSize: '18px', marginTop: '16px' }}>This wedding site could not be found.</p>
+          <p style={{ fontSize: '14px', marginTop: '8px', opacity: 0.8 }}>Please check the URL or contact the couple.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
