@@ -14,6 +14,7 @@ export async function resolveSite(
 ): Promise<SiteRow | null> {
   const subdomain = (customerSubdomain || '').trim().toLowerCase();
   if (!subdomain || !SUBDOMAIN_REGEX.test(subdomain)) {
+    console.warn('[siteResolver] invalid subdomain format:', subdomain);
     return null;
   }
 
@@ -23,16 +24,26 @@ export async function resolveSite(
     );
 
     if (!res.ok) {
+      console.warn('[siteResolver] API returned non-200 for', subdomain, 'status:', res.status);
       return null;
     }
 
     const site = (await res.json()) as SiteRow & { template_id?: string; status?: string };
+    console.log('[siteResolver] API response for', subdomain, ':', {
+      id: site.id,
+      subdomain: site.subdomain,
+      template_id: site.template_id,
+      status: site.status,
+      hasData: !!site.data,
+    });
 
     if (site.template_id !== EXPECTED_TEMPLATE_ID) {
+      console.warn('[siteResolver] template_id mismatch for', subdomain, ':', site.template_id, '!==', EXPECTED_TEMPLATE_ID);
       return null;
     }
 
     if (site.status !== 'active') {
+      console.warn('[siteResolver] status not active for', subdomain, ':', site.status);
       return null;
     }
 
