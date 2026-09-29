@@ -16,17 +16,15 @@ const EXPECTED_ADMIN_TEMPLATE_ID = 'editorial'
 const ADMIN_SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/
 
 async function validateAdminCustomer(customer: string): Promise<boolean> {
-  const trimmed = (customer || '').toLowerCase().trim()
-  if (!trimmed || !ADMIN_SUBDOMAIN_REGEX.test(trimmed)) {
-    if (!import.meta.env.DEV) {
-      window.location.href = `${ADMIN_API_URL}/dashboard?error=invalid_customer`
-    }
-    return false
-  }
-
-  // In dev, allow any customer so local testing works without the API
+  // In dev, bypass all validation so localhost/admin works
   if (import.meta.env.DEV) {
     return true
+  }
+
+  const trimmed = (customer || '').toLowerCase().trim()
+  if (!trimmed || !ADMIN_SUBDOMAIN_REGEX.test(trimmed)) {
+    window.location.href = `${ADMIN_API_URL}/dashboard?error=invalid_customer`
+    return false
   }
 
   try {
