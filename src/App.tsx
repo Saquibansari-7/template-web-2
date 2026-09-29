@@ -24,32 +24,29 @@ async function validateAdminCustomer(customer: string): Promise<boolean> {
     return false
   }
 
+  // In dev, allow any customer so local testing works without the API
+  if (import.meta.env.DEV) {
+    return true
+  }
+
   try {
     const res = await fetch(`${ADMIN_API_URL}/api/site/lookup?customer=${encodeURIComponent(trimmed)}`)
     if (!res.ok) {
-      if (!import.meta.env.DEV) {
-        window.location.href = `${ADMIN_API_URL}/dashboard?error=site_not_found`
-      }
+      window.location.href = `${ADMIN_API_URL}/dashboard?error=site_not_found`
       return false
     }
     const siteData = await res.json()
     if (siteData.template_id !== EXPECTED_ADMIN_TEMPLATE_ID) {
-      if (!import.meta.env.DEV) {
-        window.location.href = `${ADMIN_API_URL}/dashboard?error=wrong_template`
-      }
+      window.location.href = `${ADMIN_API_URL}/dashboard?error=wrong_template`
       return false
     }
     if (siteData.status !== 'active') {
-      if (!import.meta.env.DEV) {
-        window.location.href = `${ADMIN_API_URL}/dashboard?error=site_inactive`
-      }
+      window.location.href = `${ADMIN_API_URL}/dashboard?error=site_inactive`
       return false
     }
     return true
   } catch {
-    if (!import.meta.env.DEV) {
-      window.location.href = `${ADMIN_API_URL}/dashboard?error=validation_failed`
-    }
+    window.location.href = `${ADMIN_API_URL}/dashboard?error=validation_failed`
     return false
   }
 }
