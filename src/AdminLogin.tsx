@@ -3,12 +3,13 @@ import './AdminLogin.css';
 
 interface AdminLoginProps {
   onLogin: () => void;
+  customer: string;
 }
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 30_000;
 
-function AdminLogin({ onLogin }: AdminLoginProps) {
+function AdminLogin({ onLogin, customer }: AdminLoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLocked, setIsLocked] = useState(() => {
@@ -35,7 +36,7 @@ function AdminLogin({ onLogin }: AdminLoginProps) {
         }
       }
     } catch {
-      // ignore parse errors
+      // ignore
     }
     return 0;
   });
@@ -50,37 +51,49 @@ function AdminLogin({ onLogin }: AdminLoginProps) {
     }
   }, [lockedUntil]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Date.now() < lockedUntil) {
       setError(`Too many attempts. Try again in ${Math.ceil((lockedUntil - Date.now()) / 1000)}s.`);
       return;
     }
-    if (password === 'demo@222') {
-      localStorage.removeItem('adminLoginAttempts');
-      localStorage.setItem('adminAuthenticated', 'true');
-      onLogin();
-    } else {
-      const newAttempts = (() => {
-        try {
-          const stored = localStorage.getItem('adminLoginAttempts');
-          if (stored) return JSON.parse(stored).count + 1;
-        } catch {
-          // ignore
-        }
-        return 1;
-      })();
 
-      if (newAttempts >= MAX_ATTEMPTS) {
-        const until = Date.now() + LOCKOUT_MS;
-        setLockedUntil(until);
-        setIsLocked(true);
-        localStorage.setItem('adminLoginAttempts', JSON.stringify({ count: newAttempts, until }));
-        setError(`Too many attempts. Try again in ${LOCKOUT_MS / 1000}s.`);
+    try {
+      const res = await fetch('https://weddappvows.vercel.app/api/admin/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.valid) {
+        localStorage.removeItem('adminLoginAttempts');
+        onLogin();
       } else {
-        setError(`Incorrect password (${newAttempts}/${MAX_ATTEMPTS})`);
+        const newAttempts = (() => {
+          try {
+            const stored = localStorage.getItem('adminLoginAttempts');
+            if (stored) return JSON.parse(stored).count + 1;
+          } catch {
+            // ignore
+          }
+          return 1;
+        })();
+
+        if (newAttempts >= MAX_ATTEMPTS) {
+          const until = Date.now() + LOCKOUT_MS;
+          setLockedUntil(until);
+          setIsLocked(true);
+          localStorage.setItem('adminLoginAttempts', JSON.stringify({ count: newAttempts, until }));
+          setError(`Too many attempts. Try again in ${LOCKOUT_MS / 1000}s.`);
+        } else {
+          setError(`Incorrect password (${newAttempts}/${MAX_ATTEMPTS})`);
+        }
+        setPassword('');
       }
-      setPassword('');
+    } catch {
+      setError('Verification failed. Please try again.');
     }
   };
 

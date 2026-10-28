@@ -66,14 +66,25 @@ function AdminPanel() {
   return (
     <div className="admin-panel">
       <div className="admin-header">
-        <h1>Website Admin Panel</h1>
-        <a href={viewSiteHref} target="_blank" rel="noopener noreferrer" className="admin-view-site-btn">View Site →</a>
-        <button className="admin-exit-btn" onClick={() => {
-          localStorage.removeItem('adminAuthenticated');
-          window.location.reload();
-        }}>
-          Logout
-        </button>
+        <div className="admin-header-left">
+          <h1>Website Admin Panel</h1>
+          {customer && <span className="admin-customer-badge">{customer}</span>}
+        </div>
+        <div className="admin-header-actions">
+          <a href={viewSiteHref} target="_blank" rel="noopener noreferrer" className="admin-view-site-btn">View Site →</a>
+          <button className="admin-change-pwd-btn" onClick={() => {
+            localStorage.removeItem(`admin_pass_${customer || ''}`);
+            window.location.reload();
+          }}>
+            Change Password
+          </button>
+          <button className="admin-exit-btn" onClick={() => {
+            localStorage.removeItem('adminAuthenticated');
+            window.location.reload();
+          }}>
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="admin-tabs">

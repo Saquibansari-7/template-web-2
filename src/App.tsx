@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import FAQModal from './FAQModal'
 import AdminPanel from './AdminPanel'
-import AdminLogin from './AdminLogin'
+import AdminPasswordGate from './components/admin-password-gate/AdminPasswordGate'
 import { useWebsiteContext } from './context/WebsiteContext'
 import './App.css'
 
@@ -16,7 +16,6 @@ const EXPECTED_ADMIN_TEMPLATE_ID = 'editorial'
 const ADMIN_SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/
 
 async function validateAdminCustomer(customer: string): Promise<boolean> {
-  // In dev, bypass all validation so localhost/admin works
   if (import.meta.env.DEV) {
     return true
   }
@@ -52,7 +51,6 @@ async function validateAdminCustomer(customer: string): Promise<boolean> {
 function App() {
   const { content, site, loading } = useWebsiteContext();
   const [isFAQOpen, setIsFAQOpen] = useState(false)
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
   const [isCustomerValid, setIsCustomerValid] = useState(false)
   const hasLoadedRef = useRef(false);
 
@@ -96,8 +94,9 @@ function App() {
 
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        setIsAdminAuthenticated(false)
         localStorage.removeItem('adminAuthenticated')
+        localStorage.removeItem('admin_password')
+        localStorage.removeItem('admin_pass_')
         console.log('Admin authentication cleared')
       }
     }
@@ -137,15 +136,10 @@ function App() {
     <>
       <FAQModal isOpen={isFAQOpen} onClose={() => setIsFAQOpen(false)} items={content.faq.items || []} />
 
-      {openAdmin && isCustomerValid && isAdminAuthenticated && <AdminPanel />}
-
-      {openAdmin && isCustomerValid && !isAdminAuthenticated && (
-        <div className="admin-modal-overlay">
-          <AdminLogin onLogin={() => {
-            setIsAdminAuthenticated(true)
-            localStorage.setItem('adminAuthenticated', 'true')
-          }} />
-        </div>
+      {openAdmin && isCustomerValid && (
+        <AdminPasswordGate customer={customer || ''}>
+          <AdminPanel />
+        </AdminPasswordGate>
       )}
     </>
   )
