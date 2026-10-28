@@ -19,6 +19,11 @@ function AdminPanel() {
   })();
 
   const handleImageUpload = async (section: string, field: string, file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image too large — please use a file under 5MB');
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async (e) => {
       const base64 = e.target?.result as string;
