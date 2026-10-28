@@ -554,19 +554,20 @@
 
       function startMusic(){
         if(musicPlaying) return Promise.resolve();
+        audio.load();
         return audio.play().then(() => {
           musicDisk.classList.add('playing');
           musicPlaying = true;
         }).catch(err => {
           console.warn('Autoplay blocked, will retry on next interaction:', err);
-          audio.addEventListener('canplaythrough', function onReady() {
+          function onReady() {
             audio.removeEventListener('canplaythrough', onReady);
             audio.play().then(() => {
               musicDisk.classList.add('playing');
               musicPlaying = true;
             }).catch(e => console.warn('Retry play failed:', e));
-          }, { once: true });
-          audio.load();
+          }
+          audio.addEventListener('canplaythrough', onReady, { once: true });
         });
       }
 
