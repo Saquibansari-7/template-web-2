@@ -12,7 +12,7 @@ export async function uploadImage(
   }
 
   if (file.size > MAX_IMAGE_SIZE) {
-    throw new Error("Image too large — please use a file under 2MB");
+    throw new Error("Image too large — please use a file under 5MB");
   }
 
   const path = `${siteId}/${Date.now()}-${file.name}`;
