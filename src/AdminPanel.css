@@ -1,4 +1,6 @@
 .admin-panel {
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
   background: #f5f5f5;
   font-family: 'Inter', sans-serif;
@@ -102,7 +104,16 @@
   background: white;
   border-bottom: 2px solid #e0e0e0;
   overflow-x: auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.admin-tab {
+  flex: 0 0 auto;
 }
 
 .admin-tab {
@@ -195,6 +206,7 @@
 
 .admin-field input[type="file"] {
   display: block;
+  max-width: 100%;
   margin-bottom: 15px;
   padding: 10px;
   border: 2px dashed #d4544a;
@@ -282,29 +294,113 @@
 @media (max-width: 768px) {
   .admin-header {
     flex-direction: column;
-    gap: 15px;
-    text-align: center;
+    align-items: stretch;
+    gap: 12px;
+    padding: 20px 16px;
   }
 
   .admin-header h1 {
     font-size: 1.5rem;
   }
 
-  .admin-tabs {
-    padding: 15px 10px;
-    gap: 5px;
+  .admin-customer-badge {
+    font-size: 0.8rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .admin-tab {
-    padding: 8px 12px;
+  .admin-header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .admin-view-site-btn,
+  .admin-change-pwd-btn,
+  .admin-exit-btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
     font-size: 0.85rem;
   }
 
+  .admin-tabs {
+    padding: 14px 16px;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tabs::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .admin-tab {
+    padding: 9px 16px;
+    font-size: 0.85rem;
+    flex: 0 0 auto;
+  }
+
   .admin-content {
-    padding: 15px 10px;
+    padding: 18px 16px;
   }
 
   .admin-section {
-    padding: 20px;
+    padding: 22px 18px;
+  }
+
+  .admin-field input[type="text"],
+  .admin-field input[type="tel"],
+  .admin-field textarea {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  .admin-field label {
+    font-size: 0.85rem;
+  }
+
+  .admin-checkbox {
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+
+  .admin-save-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+
+  .admin-footer {
+    padding: 22px 16px;
+  }
+
+  .admin-faq-item,
+  .admin-travel-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .admin-faq-item input[type="text"],
+  .admin-faq-item textarea,
+  .admin-travel-card > input[type="text"],
+  .admin-travel-card > textarea {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .admin-travel-card .admin-field {
+    margin-bottom: 0;
   }
 }

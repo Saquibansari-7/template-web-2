@@ -67,7 +67,7 @@ export default function AdminPasswordGate({ customer, children }: AdminPasswordG
 
   if (state === 'granted') {
     return (
-      <div className="admin-gate">
+      <div className="admin-gate admin-gate--granted">
         {children}
       </div>
     );
